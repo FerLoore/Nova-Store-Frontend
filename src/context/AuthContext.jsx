@@ -72,6 +72,16 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const register = useCallback(async (payload) => {
+    const data = await authService.register(payload);
+    if (data.token) {
+      tokenStorage.setToken(data.token);
+      setUsuario(data.usuario);
+      setMenu(resolveMenu(data.usuario, data.menu));
+    }
+    return data;
+  }, []);
+
   /**
    * Verifica si el usuario cuenta con al menos uno de los permisos dados.
    * Si el usuario es Administrador, siempre tiene permiso concedido.
@@ -98,10 +108,11 @@ export function AuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(usuario),
       login,
+      register,
       logout,
       can,
     }),
-    [usuario, menu, loading, login, logout, can]
+    [usuario, menu, loading, login, register, logout, can]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

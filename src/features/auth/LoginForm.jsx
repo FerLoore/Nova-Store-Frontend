@@ -19,7 +19,7 @@ const loginSchema = z.object({
     .min(1, "La contraseña es requerida"),
 });
 
-export function LoginForm() {
+export function LoginForm({ onToggleMode }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -138,7 +138,7 @@ export function LoginForm() {
         {...register("usuario_password")}
       />
 
-      <div className="pt-2">
+            <div className="pt-2">
         <Button
           type="submit"
           variant="primary"
@@ -148,6 +148,29 @@ export function LoginForm() {
           {isSubmitting ? "Ingresando..." : "Iniciar sesión"}
         </Button>
       </div>
+
+      {onToggleMode && (
+        <div className="text-center pt-2">
+          <p style={{ fontSize: 13, color: "#5f5e5d", margin: 0 }}>
+            ¿No tienes una cuenta?{" "}
+            <button
+              type="button"
+              onClick={onToggleMode}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                color: "#0c0a08",
+                fontWeight: 600,
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+            >
+              Registrarse
+            </button>
+          </p>
+        </div>
+      )}
     </form>
   );
 }
