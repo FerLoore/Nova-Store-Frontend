@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@theme {
+  --color-bone: #f4f2f0;
+  --color-paper: #ffffff;
+  --color-ink: #0c0a08;
+  --color-obsidian: #1a1919;
+  --color-ash: #5f5e5d;
+  --color-smoke: #d3d3d3;
+  --color-hairline: #e5e7eb;
+  --color-volt: #e4f222;
+  --color-volt-hover: #d4e200;
+  --color-danger: #b42318;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bone);
+  color: var(--color-ink);
+  font-feature-settings: "ss01" on;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bone);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-smoke);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ash);
+}
+
+/* Focus visible global */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
