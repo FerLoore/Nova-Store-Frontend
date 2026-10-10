@@ -1,11 +1,17 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { LoginForm } from "../features/auth/LoginForm";
+import { RegisterForm } from "../features/auth/RegisterForm";
 
-export function LoginPage() {
+export function LoginPage({ initialMode = "login" }) {
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
+  const [mode, setMode] = useState(initialMode); // "login" | "register"
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -149,17 +155,22 @@ export function LoginPage() {
                 lineHeight: 1.2,
               }}
             >
-              Iniciar sesión
+              {mode === "login" ? "Iniciar sesión" : "Registrar usuario"}
             </h2>
             <p style={{ fontSize: 13, color: "#5f5e5d", margin: 0 }}>
-              Accede al panel de administración
+              {mode === "login"
+                ? "Accede al panel de administración"
+                : "Crea tu cuenta para acceder al sistema"}
             </p>
           </div>
 
-          <LoginForm />
+          {mode === "login" ? (
+            <LoginForm onToggleMode={() => setMode("register")} />
+          ) : (
+            <RegisterForm onToggleMode={() => setMode("login")} />
+          )}
         </div>
       </div>
     </div>
   );
 }
-

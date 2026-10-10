@@ -14,7 +14,8 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Ruta pública */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage initialMode="login" />} />
+      <Route path="/register" element={<LoginPage initialMode="register" />} />
 
       {/* Rutas protegidas dentro del DashboardLayout */}
       <Route
