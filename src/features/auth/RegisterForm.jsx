@@ -9,20 +9,12 @@ import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
 import { getErrorMessage } from "../../utils/errors";
+import { personNameSchema, emailSchema } from "../../utils/validators";
 
 const registerSchema = z
   .object({
-    usuario_nombre: z
-      .string()
-      .trim()
-      .min(1, "El nombre completo es requerido")
-      .max(100, "Máximo 100 caracteres"),
-    usuario_email: z
-      .string()
-      .trim()
-      .min(1, "El correo electrónico es requerido")
-      .email("Ingresa un correo electrónico válido")
-      .max(120, "Máximo 120 caracteres"),
+    usuario_nombre: personNameSchema("El nombre completo"),
+    usuario_email: emailSchema("El correo electrónico"),
     usuario_password: z
       .string()
       .min(8, "La contraseña debe tener al menos 8 caracteres")
@@ -124,6 +116,7 @@ export function RegisterForm({ onToggleMode }) {
         placeholder="Ej. Juan Pérez"
         error={errors.usuario_nombre?.message}
         autoComplete="name"
+        restrictType="letters"
         {...register("usuario_nombre")}
       />
 

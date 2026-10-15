@@ -82,7 +82,7 @@ export function ClientesList() {
       ),
     },
     {
-      header: "DPI / NIT",
+      header: "NIT",
       accessor: "cliente_dpi_nit",
       render: (c) => c.cliente_dpi_nit || <span style={{ color: "#5f5e5d", opacity: 0.6 }}>—</span>,
     },

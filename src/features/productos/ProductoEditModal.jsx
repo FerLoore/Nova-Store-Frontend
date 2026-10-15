@@ -9,15 +9,12 @@ import { Button } from "../../components/ui/Button";
 import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
+import { productNameSchema } from "../../utils/validators";
 
 const productoEditSchema = z.object({
   categoria_id: z.coerce.number().int().positive("Selecciona una categoría"),
   marca_id: z.coerce.number().int().positive("Selecciona una marca"),
-  producto_nombre: z
-    .string()
-    .trim()
-    .min(1, "El nombre del producto es obligatorio")
-    .max(150, "Máximo 150 caracteres"),
+  producto_nombre: productNameSchema,
   producto_genero: z.enum(["HOMBRE", "MUJER", "UNISEX"], {
     errorMap: () => ({ message: "Selecciona un género válido" }),
   }),
@@ -106,6 +103,7 @@ export function ProductoEditModal({ isOpen, onClose, producto, onSave }) {
           label="Nombre del Producto *"
           placeholder="Ej. Sudadera Oversize Fleece"
           error={errors.producto_nombre?.message}
+          restrictType="letters"
           {...register("producto_nombre")}
         />
 

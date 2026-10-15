@@ -6,13 +6,10 @@ import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { getErrorMessage } from "../../utils/errors";
+import { brandNameSchema } from "../../utils/validators";
 
 const marcaSchema = z.object({
-  marca_nombre: z
-    .string()
-    .trim()
-    .min(1, "El nombre de la marca es obligatorio")
-    .max(80, "Máximo 80 caracteres"),
+  marca_nombre: brandNameSchema,
   marca_descripcion: z
     .string()
     .trim()
@@ -83,6 +80,7 @@ export function MarcaModal({ isOpen, onClose, marca, onSave }) {
           label="Nombre de la Marca *"
           placeholder="Ej. Zara, Nike, Adanola"
           error={errors.marca_nombre?.message}
+          restrictType="alphanumeric"
           {...register("marca_nombre")}
         />
 

@@ -10,34 +10,22 @@ import { CategoriaQuickModal } from "./CategoriaQuickModal";
 import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
+import { colorSchema, priceSchema, stockSchema, productNameSchema } from "../../utils/validators";
 
 const varianteItemSchema = z.object({
   variante_talla: z.string().trim().min(1, "Requerido"),
-  variante_color: z.string().trim().min(1, "Requerido"),
+  variante_color: colorSchema,
   variante_sku: z.string().trim().min(1, "SKU Requerido"),
-  variante_precio_compra: z.preprocess(
-    (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
-    z.number().min(0, "Debe ser >= 0").nullable().optional()
-  ),
-  variante_precio_venta: z.preprocess(
-    (val) => Number(val),
-    z.number().min(0, "Debe ser >= 0")
-  ),
-  variante_stock_minimo: z.preprocess(
-    (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
-    z.number().int().min(0, "Entero >= 0").nullable().optional()
-  ),
+  variante_precio_compra: priceSchema("Precio de compra", false),
+  variante_precio_venta: priceSchema("Precio de venta", true),
+  variante_stock_minimo: stockSchema("Stock mínimo"),
 });
 
 const productoCreateSchema = z
   .object({
     categoria_id: z.coerce.number().int().positive("Selecciona una categoría"),
     marca_id: z.coerce.number().int().positive("Selecciona una marca"),
-    producto_nombre: z
-      .string()
-      .trim()
-      .min(1, "El nombre del producto es obligatorio")
-      .max(150, "Máximo 150 caracteres"),
+    producto_nombre: productNameSchema,
     producto_genero: z.enum(["HOMBRE", "MUJER", "UNISEX"], {
       errorMap: () => ({ message: "Selecciona un género válido" }),
     }),
@@ -196,6 +184,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                 label="Nombre del Producto *"
                 placeholder="Ej. Sudadera Oversize Fleece"
                 error={errors.producto_nombre?.message}
+                restrictType="letters"
                 {...register("producto_nombre")}
               />
 
@@ -321,6 +310,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       label="Color *"
                       placeholder="Negro, Gris..."
                       error={errors.variantes?.[idx]?.variante_color?.message}
+                      restrictType="letters"
                       {...register(`variantes.${idx}.variante_color`)}
                     />
 
@@ -335,7 +325,9 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       label="P. Compra"
                       type="number"
                       step="0.01"
+                      min="0"
                       placeholder="0.00"
+                      restrictType="decimal"
                       error={
                         errors.variantes?.[idx]?.variante_precio_compra?.message
                       }
@@ -346,7 +338,9 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       label="P. Venta *"
                       type="number"
                       step="0.01"
+                      min="0"
                       placeholder="0.00"
+                      restrictType="decimal"
                       error={
                         errors.variantes?.[idx]?.variante_precio_venta?.message
                       }
@@ -356,7 +350,9 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                     <Input
                       label="Stock Mínimo"
                       type="number"
+                      min="0"
                       placeholder="0"
+                      restrictType="numbers"
                       error={
                         errors.variantes?.[idx]?.variante_stock_minimo?.message
                       }
