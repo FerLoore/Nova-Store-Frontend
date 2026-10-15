@@ -8,23 +8,15 @@ import { Input } from "../../components/ui/Input";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { formatCurrency } from "../../utils/formatters";
 import { getErrorMessage } from "../../utils/errors";
+import { colorSchema, priceSchema, stockSchema } from "../../utils/validators";
 
 const varianteFormSchema = z.object({
   variante_talla: z.string().trim().min(1, "Requerido"),
-  variante_color: z.string().trim().min(1, "Requerido"),
+  variante_color: colorSchema,
   variante_sku: z.string().trim().min(1, "SKU Requerido"),
-  variante_precio_compra: z.preprocess(
-    (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
-    z.number().min(0, "Debe ser >= 0").nullable().optional()
-  ),
-  variante_precio_venta: z.preprocess(
-    (val) => Number(val),
-    z.number().min(0, "Debe ser >= 0")
-  ),
-  variante_stock_minimo: z.preprocess(
-    (val) => (val === "" || val === null || val === undefined ? null : Number(val)),
-    z.number().int().min(0, "Entero >= 0").nullable().optional()
-  ),
+  variante_precio_compra: priceSchema("Precio de compra", false),
+  variante_precio_venta: priceSchema("Precio de venta", true),
+  variante_stock_minimo: stockSchema("Stock mínimo"),
 });
 
 export function VariantesModal({
@@ -179,6 +171,7 @@ export function VariantesModal({
                     label="Color *"
                     placeholder="Azul, Rojo..."
                     error={errors.variante_color?.message}
+                    restrictType="letters"
                     {...register("variante_color")}
                   />
                   <Input
@@ -191,7 +184,9 @@ export function VariantesModal({
                     label="P. Compra"
                     type="number"
                     step="0.01"
+                    min="0"
                     placeholder="0.00"
+                    restrictType="decimal"
                     error={errors.variante_precio_compra?.message}
                     {...register("variante_precio_compra")}
                   />
@@ -199,14 +194,18 @@ export function VariantesModal({
                     label="P. Venta *"
                     type="number"
                     step="0.01"
+                    min="0"
                     placeholder="0.00"
+                    restrictType="decimal"
                     error={errors.variante_precio_venta?.message}
                     {...register("variante_precio_venta")}
                   />
                   <Input
                     label="Stock Mínimo"
                     type="number"
+                    min="0"
                     placeholder="0"
+                    restrictType="numbers"
                     error={errors.variante_stock_minimo?.message}
                     {...register("variante_stock_minimo")}
                   />

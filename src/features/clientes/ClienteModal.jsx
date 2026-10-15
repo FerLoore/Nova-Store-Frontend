@@ -1,35 +1,18 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
+import { PhoneInput } from "../../components/ui/PhoneInput";
 import { Button } from "../../components/ui/Button";
 import { getErrorMessage } from "../../utils/errors";
-
-const PHONE_REGEX = /^[0-9\s+\-()]{7,30}$/;
+import { personNameSchema, nitSchema, phoneSchema } from "../../utils/validators";
 
 const clienteSchema = z.object({
-  cliente_nombre: z
-    .string()
-    .trim()
-    .min(1, "El nombre del cliente es obligatorio")
-    .max(120, "Máximo 120 caracteres"),
-  cliente_dpi_nit: z
-    .string()
-    .trim()
-    .max(30, "Máximo 30 caracteres")
-    .optional()
-    .or(z.literal("")),
-  cliente_telefono: z
-    .string()
-    .trim()
-    .refine(
-      (val) => !val || PHONE_REGEX.test(val),
-      "Teléfono inválido (7-30 caracteres numéricos o signos +, -, ())"
-    )
-    .optional()
-    .or(z.literal("")),
+  cliente_nombre: personNameSchema("El nombre del cliente"),
+  cliente_dpi_nit: nitSchema,
+  cliente_telefono: phoneSchema,
   cliente_correo: z
     .string()
     .trim()
@@ -53,6 +36,7 @@ export function ClienteModal({ isOpen, onClose, cliente, onSave }) {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -123,22 +107,32 @@ export function ClienteModal({ isOpen, onClose, cliente, onSave }) {
           label="Nombre Completo *"
           placeholder="Ej. Ana Lucía Morales"
           error={errors.cliente_nombre?.message}
+          restrictType="letters"
           {...register("cliente_nombre")}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="DPI / NIT"
-            placeholder="1234567890101 o 123456-7"
+            label="NIT"
+            placeholder="1234567-8"
             error={errors.cliente_dpi_nit?.message}
+            restrictType="nit"
+            maxLength={10}
             {...register("cliente_dpi_nit")}
           />
 
-          <Input
-            label="Teléfono"
-            placeholder="+502 5555-5555"
-            error={errors.cliente_telefono?.message}
-            {...register("cliente_telefono")}
+          <Controller
+            name="cliente_telefono"
+            control={control}
+            render={({ field }) => (
+              <PhoneInput
+                label="Teléfono"
+                placeholder="5555 5555"
+                error={errors.cliente_telefono?.message}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
 

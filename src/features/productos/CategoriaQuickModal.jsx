@@ -7,13 +7,10 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useCategorias } from "../../hooks/useCategorias";
 import { getErrorMessage } from "../../utils/errors";
+import { categoryNameSchema } from "../../utils/validators";
 
 const categoriaSchema = z.object({
-  categoria_nombre: z
-    .string()
-    .trim()
-    .min(1, "El nombre de la categoría es obligatorio")
-    .max(80, "Máximo 80 caracteres"),
+  categoria_nombre: categoryNameSchema,
   categoria_descripcion: z
     .string()
     .trim()
@@ -67,6 +64,7 @@ export function CategoriaQuickModal({ isOpen, onClose, onCreated }) {
           label="Nombre de la Categoría *"
           placeholder="Ej. Camisas, Pantalones, Vestidos"
           error={errors.categoria_nombre?.message}
+          restrictType="letters"
           {...register("categoria_nombre")}
         />
 

@@ -6,13 +6,18 @@ import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { getErrorMessage } from "../../utils/errors";
+import { PATTERNS } from "../../utils/validators";
 
 const rolSchema = z.object({
   rol_nombre: z
     .string()
     .trim()
-    .min(1, "El nombre del rol es obligatorio")
-    .max(50, "Máximo 50 caracteres"),
+    .min(1, "Este campo no puede quedarse vacío")
+    .max(50, "Máximo 50 caracteres")
+    .refine(
+      (val) => PATTERNS.ROLE_NAME.test(val),
+      "Solo se permiten letras y espacios (sin números ni caracteres especiales)"
+    ),
   rol_descripcion: z
     .string()
     .trim()
@@ -83,6 +88,7 @@ export function RolModal({ isOpen, onClose, rol, onSave }) {
           label="Nombre del Rol"
           placeholder="EJ. SUPERVISOR"
           error={errors.rol_nombre?.message}
+          restrictType="letters"
           {...register("rol_nombre")}
         />
 

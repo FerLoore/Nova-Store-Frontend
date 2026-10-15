@@ -8,21 +8,13 @@ import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
 import { useRoles } from "../../hooks/useRoles";
 import { getErrorMessage } from "../../utils/errors";
+import { personNameSchema, emailSchema } from "../../utils/validators";
 
 const createUsuarioSchema = (isEditing) =>
   z.object({
     rol_id: z.coerce.number().int().positive("Debes seleccionar un rol"),
-    usuario_nombre: z
-      .string()
-      .trim()
-      .min(1, "El nombre es obligatorio")
-      .max(100, "Máximo 100 caracteres"),
-    usuario_email: z
-      .string()
-      .trim()
-      .min(1, "El correo es obligatorio")
-      .email("Correo electrónico inválido")
-      .max(120, "Máximo 120 caracteres"),
+    usuario_nombre: personNameSchema("El nombre"),
+    usuario_email: emailSchema("El correo electrónico"),
     usuario_password: isEditing
       ? z
           .string()
@@ -118,6 +110,7 @@ export function UsuarioModal({ isOpen, onClose, usuario, onSave }) {
           label="Nombre Completo"
           placeholder="Ej. Juan Pérez"
           error={errors.usuario_nombre?.message}
+          restrictType="letters"
           {...register("usuario_nombre")}
         />
 
