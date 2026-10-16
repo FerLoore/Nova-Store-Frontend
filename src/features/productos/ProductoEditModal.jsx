@@ -10,6 +10,7 @@ import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
 import { productNameSchema } from "../../utils/validators";
+import { VariantesManager } from "./VariantesManager";
 
 const productoEditSchema = z.object({
   categoria_id: z.coerce.number().int().positive("Selecciona una categoría"),
@@ -25,6 +26,7 @@ const productoEditSchema = z.object({
 export function ProductoEditModal({ isOpen, onClose, producto, onSave }) {
   const { categorias, isLoading: loadingCats } = useCategorias();
   const { marcas, isLoading: loadingMarcas } = useMarcas();
+  const [activeTab, setActiveTab] = useState("info"); // 'info' | 'variantes'
   const [apiError, setApiError] = useState("");
 
   const {
@@ -56,6 +58,7 @@ export function ProductoEditModal({ isOpen, onClose, producto, onSave }) {
       });
     }
     setApiError("");
+    setActiveTab("info");
   }, [producto, isOpen, reset]);
 
   const onSubmit = async (values) => {
@@ -85,86 +88,139 @@ export function ProductoEditModal({ isOpen, onClose, producto, onSave }) {
     label: m.marca_nombre,
   }));
 
+  const variantesCount = producto?.variantes?.length || 0;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Editar Datos del Producto"
-      maxWidth="max-w-2xl"
+      title={`Producto: ${producto?.producto_nombre || "Editar"}`}
+      maxWidth={activeTab === "variantes" ? "max-w-4xl" : "max-w-2xl"}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {apiError && (
-          <div style={{ padding: "10px 14px", border: "1px solid #b42318", borderRadius: 10, fontSize: 13, color: "#b42318", lineHeight: 1.5 }}>
-            {apiError}
+      <div className="space-y-5">
+        {/* Pestañas de Navegación dentro de la Vista del Producto */}
+        <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("info")}
+            style={{
+              padding: "8px 14px",
+              fontSize: 13,
+              fontWeight: 500,
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: activeTab === "info" ? "#0c0a08" : "transparent",
+              color: activeTab === "info" ? "#ffffff" : "#5f5e5d",
+              transition: "all 0.15s ease",
+            }}
+          >
+            Datos generales
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("variantes")}
+            style={{
+              padding: "8px 14px",
+              fontSize: 13,
+              fontWeight: 500,
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: activeTab === "variantes" ? "#0c0a08" : "transparent",
+              color: activeTab === "variantes" ? "#ffffff" : "#5f5e5d",
+              transition: "all 0.15s ease",
+            }}
+          >
+            Variantes ({variantesCount})
+          </button>
+        </div>
+
+        {activeTab === "info" ? (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {apiError && (
+              <div style={{ padding: "10px 14px", border: "1px solid #b42318", borderRadius: 10, fontSize: 13, color: "#b42318", lineHeight: 1.5 }}>
+                {apiError}
+              </div>
+            )}
+
+            <Input
+              label="Nombre del Producto *"
+              placeholder="Ej. Sudadera Oversize Fleece"
+              error={errors.producto_nombre?.message}
+              restrictType="letters"
+              {...register("producto_nombre")}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Categoría *"
+                options={categoriaOptions}
+                placeholder={loadingCats ? "Cargando..." : "Seleccionar categoría"}
+                error={errors.categoria_id?.message}
+                {...register("categoria_id")}
+              />
+
+              <Select
+                label="Marca *"
+                options={marcaOptions}
+                placeholder={loadingMarcas ? "Cargando..." : "Seleccionar marca"}
+                error={errors.marca_id?.message}
+                {...register("marca_id")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Género *"
+                error={errors.producto_genero?.message}
+                {...register("producto_genero")}
+              >
+                <option value="UNISEX">UNISEX</option>
+                <option value="HOMBRE">HOMBRE</option>
+                <option value="MUJER">MUJER</option>
+              </Select>
+
+              <Input
+                label="Temporada"
+                placeholder="Ej. Otoño / Invierno"
+                error={errors.producto_temporada?.message}
+                {...register("producto_temporada")}
+              />
+            </div>
+
+            <Input
+              label="Descripción"
+              placeholder="Detalles del producto"
+              error={errors.producto_descripcion?.message}
+              {...register("producto_descripcion")}
+            />
+
+            <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: "1px solid #e5e7eb" }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <VariantesManager producto={producto} canManage={true} />
+            <div className="flex justify-end pt-4" style={{ borderTop: "1px solid #e5e7eb" }}>
+              <Button variant="secondary" onClick={onClose}>
+                Cerrar
+              </Button>
+            </div>
           </div>
         )}
-
-        <Input
-          label="Nombre del Producto *"
-          placeholder="Ej. Sudadera Oversize Fleece"
-          error={errors.producto_nombre?.message}
-          restrictType="letters"
-          {...register("producto_nombre")}
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select
-            label="Categoría *"
-            options={categoriaOptions}
-            placeholder={loadingCats ? "Cargando..." : "Seleccionar categoría"}
-            error={errors.categoria_id?.message}
-            {...register("categoria_id")}
-          />
-
-          <Select
-            label="Marca *"
-            options={marcaOptions}
-            placeholder={loadingMarcas ? "Cargando..." : "Seleccionar marca"}
-            error={errors.marca_id?.message}
-            {...register("marca_id")}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select
-            label="Género *"
-            error={errors.producto_genero?.message}
-            {...register("producto_genero")}
-          >
-            <option value="UNISEX">UNISEX</option>
-            <option value="HOMBRE">HOMBRE</option>
-            <option value="MUJER">MUJER</option>
-          </Select>
-
-          <Input
-            label="Temporada"
-            placeholder="Ej. Otoño / Invierno"
-            error={errors.producto_temporada?.message}
-            {...register("producto_temporada")}
-          />
-        </div>
-
-        <Input
-          label="Descripción"
-          placeholder="Detalles del producto"
-          error={errors.producto_descripcion?.message}
-          {...register("producto_descripcion")}
-        />
-
-        <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: "1px solid #e5e7eb" }}>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" variant="primary" disabled={isSubmitting}>
-            {isSubmitting ? "Guardando..." : "Guardar Cambios"}
-          </Button>
-        </div>
-      </form>
+      </div>
     </Modal>
   );
 }

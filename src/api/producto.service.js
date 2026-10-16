@@ -24,7 +24,6 @@ export const productoService = {
 
   /**
    * Crea un producto con al menos 1 variante.
-   * @param {{ categoria_id: number, marca_id: number, producto_nombre: string, producto_descripcion?: string, producto_genero: "HOMBRE"|"MUJER"|"UNISEX", producto_temporada?: string, variantes: Array<{ variante_talla: string, variante_color: string, variante_sku: string, variante_precio_compra?: number|null, variante_precio_venta: number, variante_stock_minimo?: number|null }> }} payload
    */
   async createProducto(payload) {
     const { data } = await http.post("/nova-producto", payload);
@@ -33,8 +32,6 @@ export const productoService = {
 
   /**
    * Actualiza los datos base del producto (no variantes).
-   * @param {number|string} id
-   * @param {{ producto_nombre?: string, producto_descripcion?: string, producto_genero?: string, producto_temporada?: string, categoria_id?: number, marca_id?: number }} payload
    */
   async updateProducto(id, payload) {
     const { data } = await http.put(`/nova-producto/${id}`, payload);
@@ -43,7 +40,6 @@ export const productoService = {
 
   /**
    * Desactiva un producto (borrado lógico).
-   * @param {number|string} id
    */
   async deleteProducto(id) {
     const { data } = await http.delete(`/nova-producto/${id}`);
@@ -51,31 +47,83 @@ export const productoService = {
   },
 
   /**
-   * Agrega una nueva variante a un producto existente.
+   * Obtiene las variantes de un producto filtrando siempre por PRODU_PRODUCTO.
    * @param {number|string} productoId
-   * @param {{ variante_talla: string, variante_color: string, variante_sku: string, variante_precio_compra?: number|null, variante_precio_venta: number, variante_stock_minimo?: number|null }} payload
+   */
+  async getVariantesByProducto(productoId) {
+    const { data } = await http.get(`/nova-producto/${productoId}/variantes`);
+    return data;
+  },
+
+  /**
+   * Agrega una nueva variante a un producto existente (asociada a PRODU_PRODUCTO).
+   * @param {number|string} productoId
+   * @param {object} payload
    */
   async addVariante(productoId, payload) {
-    const { data } = await http.post(`/nova-producto/${productoId}/variantes`, payload);
+    const { data } = await http.post(`/nova-producto/${productoId}/variantes`, {
+      ...payload,
+      producto_id: productoId
+    });
     return data;
   },
 
   /**
-   * Modifica una variante existente.
-   * @param {number|string} varianteId
-   * @param {{ variante_talla?: string, variante_color?: string, variante_sku?: string, variante_precio_compra?: number|null, variante_precio_venta?: number, variante_stock_minimo?: number|null }} payload
+   * Modifica una variante existente filtrando siempre por PRODU_PRODUCTO.
    */
-  async updateVariante(varianteId, payload) {
-    const { data } = await http.put(`/nova-producto/variante/${varianteId}`, payload);
+  async updateVariante(productoIdOrPayload, maybeVarianteId, maybeData) {
+    let productoId = null;
+    let varianteId = null;
+    let dataPayload = null;
+
+    if (typeof productoIdOrPayload === "object" && productoIdOrPayload !== null) {
+      productoId = productoIdOrPayload.productoId || productoIdOrPayload.producto_id;
+      varianteId = productoIdOrPayload.varianteId || productoIdOrPayload.variante_id;
+      dataPayload = productoIdOrPayload.data || productoIdOrPayload;
+    } else if (maybeData !== undefined) {
+      productoId = productoIdOrPayload;
+      varianteId = maybeVarianteId;
+      dataPayload = maybeData;
+    } else {
+      varianteId = productoIdOrPayload;
+      dataPayload = maybeVarianteId;
+    }
+
+    const url = productoId
+      ? `/nova-producto/${productoId}/variantes/${varianteId}`
+      : `/nova-producto/variante/${varianteId}`;
+
+    const { data } = await http.put(url, {
+      ...dataPayload,
+      ...(productoId ? { producto_id: productoId } : {})
+    });
     return data;
   },
 
   /**
-   * Desactiva una variante (borrado lógico).
-   * @param {number|string} varianteId
+   * Desactiva una variante filtrando siempre por PRODU_PRODUCTO.
    */
-  async deleteVariante(varianteId) {
-    const { data } = await http.delete(`/nova-producto/variante/${varianteId}`);
+  async deleteVariante(productoIdOrVarianteId, maybeVarianteId) {
+    let productoId = null;
+    let varianteId = null;
+
+    if (maybeVarianteId !== undefined) {
+      productoId = productoIdOrVarianteId;
+      varianteId = maybeVarianteId;
+    } else if (typeof productoIdOrVarianteId === "object" && productoIdOrVarianteId !== null) {
+      productoId = productoIdOrVarianteId.productoId || productoIdOrVarianteId.producto_id;
+      varianteId = productoIdOrVarianteId.varianteId || productoIdOrVarianteId.variante_id;
+    } else {
+      varianteId = productoIdOrVarianteId;
+    }
+
+    const url = productoId
+      ? `/nova-producto/${productoId}/variantes/${varianteId}`
+      : `/nova-producto/variante/${varianteId}`;
+
+    const { data } = await http.delete(url, {
+      params: productoId ? { producto_id: productoId } : {}
+    });
     return data;
   },
 };

@@ -20,9 +20,6 @@ export function ProductosList() {
     createProducto,
     updateProducto,
     deleteProducto,
-    addVariante,
-    updateVariante,
-    deleteVariante,
   } = useProductos();
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -199,7 +196,7 @@ export function ProductosList() {
         onSave={createProducto}
       />
 
-      {/* Modal Editar Producto */}
+      {/* Modal Editar Producto con Pestaña de Variantes Integrada */}
       <ProductoEditModal
         isOpen={Boolean(editingProducto)}
         onClose={() => setEditingProducto(null)}
@@ -207,15 +204,12 @@ export function ProductosList() {
         onSave={handleSaveEdit}
       />
 
-      {/* Modal de Variantes del Producto */}
+      {/* Modal Directo de Variantes del Producto */}
       <VariantesModal
         isOpen={Boolean(activeVariantesProducto)}
         onClose={() => setVariantesProducto(null)}
         producto={activeVariantesProducto}
         canManage={canManage}
-        onAddVariante={addVariante}
-        onUpdateVariante={updateVariante}
-        onDeleteVariante={deleteVariante}
       />
 
       {/* Confirmar Desactivación de Producto */}
