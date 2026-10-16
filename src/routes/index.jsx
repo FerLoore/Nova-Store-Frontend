@@ -10,6 +10,7 @@ import { ProductosPage } from "../pages/ProductosPage";
 import { MarcasPage } from "../pages/MarcasPage";
 import { ProveedoresPage } from "../pages/ProveedoresPage";
 import { ComprasPage } from "../pages/ComprasPage";
+import { InventarioPage } from "../pages/InventarioPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
@@ -70,6 +71,9 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Módulo Inventario y Stock */}
+        <Route path="inventario" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><InventarioPage /></ProtectedRoute>} />
 
         {/* Módulo Proveedores */}
         <Route path="proveedores" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ProveedoresPage /></ProtectedRoute>} />

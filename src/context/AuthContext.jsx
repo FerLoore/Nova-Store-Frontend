@@ -10,6 +10,7 @@ const ADMIN_DEFAULT_MENU = [
   { clave: "roles", etiqueta: "Roles y Permisos", ruta: "/roles" },
   { clave: "clientes", etiqueta: "Clientes", ruta: "/clientes" },
   { clave: "productos", etiqueta: "Productos", ruta: "/productos" },
+  { clave: "inventario", etiqueta: "Inventario y Stock", ruta: "/inventario" },
   { clave: "proveedores", etiqueta: "Proveedores", ruta: "/proveedores" },
   { clave: "compras", etiqueta: "Compras", ruta: "/compras" },
 ];
