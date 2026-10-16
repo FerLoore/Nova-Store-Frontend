@@ -8,6 +8,8 @@ import { RolesPage } from "../pages/RolesPage";
 import { ClientesPage } from "../pages/ClientesPage";
 import { ProductosPage } from "../pages/ProductosPage";
 import { MarcasPage } from "../pages/MarcasPage";
+import { ProveedoresPage } from "../pages/ProveedoresPage";
+import { ComprasPage } from "../pages/ComprasPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
@@ -68,6 +70,12 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Módulo Proveedores */}
+        <Route path="proveedores" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ProveedoresPage /></ProtectedRoute>} />
+
+        {/* Módulo Compras */}
+        <Route path="compras" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ComprasPage /></ProtectedRoute>} />
 
         {/* Módulo Marcas */}
         <Route
