@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback, useMemo } from "react";
+﻿import { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { authService } from "../api/auth.service";
 import { tokenStorage } from "../api/tokenStorage";
 import { registerUnauthorizedHandler } from "../api/http";
@@ -13,6 +13,7 @@ const ADMIN_DEFAULT_MENU = [
   { clave: "inventario", etiqueta: "Inventario y Stock", ruta: "/inventario" },
   { clave: "proveedores", etiqueta: "Proveedores", ruta: "/proveedores" },
   { clave: "compras", etiqueta: "Compras", ruta: "/compras" },
+  { clave: "ventas", etiqueta: "Ventas", ruta: "/ventas" },
 ];
 
 const resolveMenu = (user, serverMenu) => {
@@ -37,14 +38,14 @@ export function AuthProvider({ children }) {
     setMenu([]);
   }, []);
 
-  // Registrar callback para que http.js cierre sesión ante 401
+  // Registrar callback para que http.js cierre sesiÃ³n ante 401
   useEffect(() => {
     registerUnauthorizedHandler(() => {
       logout();
     });
   }, [logout]);
 
-  // Restaurar sesión al iniciar si hay token
+  // Restaurar sesiÃ³n al iniciar si hay token
   useEffect(() => {
     const restoreSession = async () => {
       const token = tokenStorage.getToken();
@@ -57,7 +58,7 @@ export function AuthProvider({ children }) {
         setUsuario(data.usuario);
         setMenu(resolveMenu(data.usuario, data.menu));
       } catch (err) {
-        console.warn("No se pudo restaurar la sesión:", err);
+        console.warn("No se pudo restaurar la sesiÃ³n:", err);
         logout();
       } finally {
         setLoading(false);
@@ -120,3 +121,4 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+

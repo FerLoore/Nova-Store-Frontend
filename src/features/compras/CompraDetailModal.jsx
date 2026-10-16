@@ -1,6 +1,7 @@
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency } from "../../utils/formatters";
+import { HiOutlineCheck } from "react-icons/hi2";
 
 export function CompraDetailModal({ isOpen, onClose, compra, onRecibir, isRecibiendo }) {
   if (!compra) return null;
@@ -129,7 +130,14 @@ export function CompraDetailModal({ isOpen, onClose, compra, onRecibir, isRecibi
                 onClick={() => onRecibir(compra.compra_id)}
                 disabled={isRecibiendo}
               >
-                {isRecibiendo ? "Recibiendo..." : "✓ Recibir Compra (Registrar Entrada)"}
+                {isRecibiendo ? (
+                  "Recibiendo..."
+                ) : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <HiOutlineCheck style={{ fontSize: 16 }} />
+                    <span>Recibir Compra (Registrar Entrada)</span>
+                  </span>
+                )}
               </Button>
             )}
           </div>

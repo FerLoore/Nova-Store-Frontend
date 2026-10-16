@@ -6,6 +6,7 @@ import { Select } from "../../components/ui/Select";
 import { useProveedores } from "../../hooks/useProveedores";
 import { useProductos } from "../../hooks/useProductos";
 import { formatCurrency } from "../../utils/formatters";
+import { HiOutlineTrash } from "react-icons/hi2";
 
 export function CompraCreateModal({ isOpen, onClose, onSave }) {
   const { proveedores, isLoading: loadingProvs } = useProveedores();
@@ -268,12 +269,15 @@ export function CompraCreateModal({ isOpen, onClose, onSave }) {
                             background: "transparent",
                             color: "#b91c1c",
                             cursor: "pointer",
-                            fontSize: 16,
-                            fontWeight: "bold"
+                            padding: "4px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: 4,
                           }}
                           title="Eliminar item"
                         >
-                          ✕
+                          <HiOutlineTrash style={{ fontSize: 16 }} />
                         </button>
                       </td>
                     </tr>

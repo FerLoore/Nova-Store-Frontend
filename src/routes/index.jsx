@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router";
+﻿import { Routes, Route, Navigate } from "react-router";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { LoginPage } from "../pages/LoginPage";
@@ -11,6 +11,7 @@ import { MarcasPage } from "../pages/MarcasPage";
 import { ProveedoresPage } from "../pages/ProveedoresPage";
 import { ComprasPage } from "../pages/ComprasPage";
 import { InventarioPage } from "../pages/InventarioPage";
+import { VentasPage } from "../pages/VentasPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
@@ -73,13 +74,44 @@ export function AppRoutes() {
         />
 
         {/* Módulo Inventario y Stock */}
-        <Route path="inventario" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><InventarioPage /></ProtectedRoute>} />
+        <Route
+          path="inventario"
+          element={
+            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+              <InventarioPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Módulo Proveedores */}
-        <Route path="proveedores" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ProveedoresPage /></ProtectedRoute>} />
+        <Route
+          path="proveedores"
+          element={
+            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+              <ProveedoresPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Módulo Compras */}
-        <Route path="compras" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ComprasPage /></ProtectedRoute>} />
+        <Route
+          path="compras"
+          element={
+            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+              <ComprasPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Ventas y Salidas */}
+        <Route
+          path="ventas"
+          element={
+            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+              <VentasPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Módulo Marcas */}
         <Route

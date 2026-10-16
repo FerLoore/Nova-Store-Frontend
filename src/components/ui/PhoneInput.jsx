@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { HiChevronDown } from "react-icons/hi2";
 
 export const COUNTRIES = [
   { code: "GT", name: "Guatemala", dialCode: "+502", flag: "🇬🇹" },
@@ -176,11 +177,13 @@ export function PhoneInput({
               top: "50%",
               transform: "translateY(-50%)",
               pointerEvents: "none",
-              fontSize: 10,
               color: "#5f5e5d",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            ▼
+            <HiChevronDown style={{ fontSize: 13 }} />
           </span>
         </div>
 

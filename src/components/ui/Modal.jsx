@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { HiOutlineXMark } from "react-icons/hi2";
 
 export function Modal({
   isOpen,
@@ -77,19 +78,26 @@ export function Modal({
             style={{
               background: "transparent",
               border: "none",
-              fontSize: 18,
-              lineHeight: 1,
               color: "#5f5e5d",
               cursor: "pointer",
-              padding: "4px 6px",
+              padding: "6px",
               borderRadius: 6,
-              transition: "color 0.15s",
+              transition: "all 0.15s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#0c0a08")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#5f5e5d")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#0c0a08";
+              e.currentTarget.style.background = "#f4f4f5";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#5f5e5d";
+              e.currentTarget.style.background = "transparent";
+            }}
             aria-label="Cerrar modal"
           >
-            ✕
+            <HiOutlineXMark style={{ fontSize: 18 }} />
           </button>
         </div>
 

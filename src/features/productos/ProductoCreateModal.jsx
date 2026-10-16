@@ -11,6 +11,7 @@ import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
 import { colorSchema, priceSchema, stockSchema, productNameSchema } from "../../utils/validators";
+import { HiOutlineTrash } from "react-icons/hi2";
 
 const varianteItemSchema = z.object({
   variante_talla: z.string().trim().min(1, "Requerido"),
@@ -291,9 +292,22 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       <button
                         type="button"
                         onClick={() => remove(idx)}
-                        style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", color: "#b42318", background: "none", border: "none", cursor: "pointer" }}
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                          color: "#b42318",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
                       >
-                        ✕ Quitar
+                        <HiOutlineTrash style={{ fontSize: 14 }} />
+                        <span>Quitar</span>
                       </button>
                     )}
                   </div>
