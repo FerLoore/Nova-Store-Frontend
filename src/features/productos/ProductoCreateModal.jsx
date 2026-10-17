@@ -12,15 +12,31 @@ import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
 import { colorSchema, priceSchema, stockSchema, productNameSchema } from "../../utils/validators";
 import { HiOutlineTrash } from "react-icons/hi2";
+import { TALLAS_DISPONIBLES } from "./VariantesManager";
 
-const varianteItemSchema = z.object({
-  variante_talla: z.string().trim().min(1, "Requerido"),
-  variante_color: colorSchema,
-  variante_sku: z.string().trim().min(1, "SKU Requerido"),
-  variante_precio_compra: priceSchema("Precio de compra", false),
-  variante_precio_venta: priceSchema("Precio de venta", true),
-  variante_stock_minimo: stockSchema("Stock mínimo"),
-});
+const varianteItemSchema = z
+  .object({
+    variante_talla: z.string().trim().min(1, "Selecciona una talla"),
+    variante_color: colorSchema,
+    variante_sku: z.string().trim().min(1, "SKU Requerido"),
+    variante_precio_compra: priceSchema("Precio de compra", false),
+    variante_precio_venta: priceSchema("Precio de venta", true),
+    variante_stock_minimo: stockSchema("Stock mínimo"),
+  })
+  .refine(
+    (v) => {
+      const compra = Number(v.variante_precio_compra);
+      const venta = Number(v.variante_precio_venta);
+      if (!isNaN(compra) && !isNaN(venta) && compra > 0) {
+        return venta >= compra;
+      }
+      return true;
+    },
+    {
+      message: "El precio de venta no puede ser menor al de compra",
+      path: ["variante_precio_venta"],
+    }
+  );
 
 const productoCreateSchema = z
   .object({
@@ -313,12 +329,47 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <Input
-                      label="Talla *"
-                      placeholder="S, M, L..."
-                      error={errors.variantes?.[idx]?.variante_talla?.message}
-                      {...register(`variantes.${idx}.variante_talla`)}
-                    />
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: 11,
+                          fontWeight: 500,
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                          color: "#5f5e5d",
+                          marginBottom: 5,
+                        }}
+                      >
+                        Talla *
+                      </label>
+                      <select
+                        style={{
+                          width: "100%",
+                          borderRadius: 10,
+                          padding: "10px 14px",
+                          fontSize: 14,
+                          lineHeight: 1.4,
+                          border: errors.variantes?.[idx]?.variante_talla ? "1px solid #b42318" : "1px solid #e5e7eb",
+                          background: "#ffffff",
+                          color: "#0c0a08",
+                          outline: "none",
+                        }}
+                        {...register(`variantes.${idx}.variante_talla`)}
+                      >
+                        <option value="">-- Talla --</option>
+                        {TALLAS_DISPONIBLES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.variantes?.[idx]?.variante_talla && (
+                        <p style={{ marginTop: 4, fontSize: 12, color: "#b42318", lineHeight: 1.4 }}>
+                          {errors.variantes[idx].variante_talla.message}
+                        </p>
+                      )}
+                    </div>
 
                     <Input
                       label="Color *"

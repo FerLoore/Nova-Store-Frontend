@@ -1,20 +1,25 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
+import { PhoneInput } from "../../components/ui/PhoneInput";
 import { Button } from "../../components/ui/Button";
 import { getErrorMessage } from "../../utils/errors";
-import { phoneSchema, emailSchema } from "../../utils/validators";
+import { phoneSchema, nitSchema } from "../../utils/validators";
 
 const proveedorSchema = z.object({
   proveedor_nombre: z
     .string()
     .trim()
     .min(1, "El nombre del proveedor es obligatorio")
-    .max(120, "Máximo 120 caracteres"),
-  proveedor_ruc_nit: z.string().trim().max(30, "Máximo 30 caracteres").optional().or(z.literal("")),
+    .max(120, "Máximo 120 caracteres")
+    .refine(
+      (val) => /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/.test(val),
+      "No se permiten caracteres especiales en el nombre"
+    ),
+  proveedor_ruc_nit: nitSchema,
   proveedor_telefono: phoneSchema,
   proveedor_correo: z.string().trim().email("Formato de correo inválido").max(120, "Máximo 120 caracteres").optional().or(z.literal("")),
   proveedor_direccion: z.string().trim().max(200, "Máximo 200 caracteres").optional().or(z.literal("")),
@@ -26,6 +31,7 @@ export function ProveedorModal({ isOpen, onClose, proveedor, onSave }) {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -95,22 +101,31 @@ export function ProveedorModal({ isOpen, onClose, proveedor, onSave }) {
           label="Nombre o Razón Social *"
           placeholder="Ej: Distribuidora Textil S.A."
           error={errors.proveedor_nombre?.message}
+          restrictType="letters"
           {...register("proveedor_nombre")}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
-            label="RUC / NIT"
+            label="NIT"
             placeholder="Ej: 12345678-9"
             error={errors.proveedor_ruc_nit?.message}
+            restrictType="nit"
+            maxLength={14}
             {...register("proveedor_ruc_nit")}
           />
-          <Input
-            label="Teléfono"
-            placeholder="Ej: 555-1234"
-            error={errors.proveedor_telefono?.message}
-            restrictType="phone"
-            {...register("proveedor_telefono")}
+          <Controller
+            name="proveedor_telefono"
+            control={control}
+            render={({ field }) => (
+              <PhoneInput
+                label="Teléfono"
+                placeholder="5555 5555"
+                error={errors.proveedor_telefono?.message}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
 

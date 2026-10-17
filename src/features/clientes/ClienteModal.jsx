@@ -39,6 +39,8 @@ export function ClienteModal({ isOpen, onClose, cliente, onSave }) {
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(clienteSchema),
@@ -50,6 +52,17 @@ export function ClienteModal({ isOpen, onClose, cliente, onSave }) {
       cliente_direccion: "",
     },
   });
+
+  const nitValue = watch("cliente_dpi_nit") || "";
+  const isCf = nitValue.trim().toUpperCase() === "CF";
+
+  const handleToggleCf = () => {
+    if (isCf) {
+      setValue("cliente_dpi_nit", "");
+    } else {
+      setValue("cliente_dpi_nit", "CF");
+    }
+  };
 
   useEffect(() => {
     if (cliente) {
@@ -112,14 +125,46 @@ export function ClienteModal({ isOpen, onClose, cliente, onSave }) {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            label="NIT"
-            placeholder="1234567-8"
-            error={errors.cliente_dpi_nit?.message}
-            restrictType="nit"
-            maxLength={10}
-            {...register("cliente_dpi_nit")}
-          />
+          <div>
+            <div className="flex items-center justify-between" style={{ marginBottom: 5 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: "#5f5e5d",
+                }}
+              >
+                NIT
+              </label>
+              <button
+                type="button"
+                onClick={handleToggleCf}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: 6,
+                  border: isCf ? "1px solid #ca8a04" : "1px solid #d1d5db",
+                  background: isCf ? "#fef08a" : "#f4f2f0",
+                  color: isCf ? "#854d0e" : "#5f5e5d",
+                  cursor: "pointer",
+                }}
+              >
+                {isCf ? "✓ Consumidor Final (CF)" : "Opción CF"}
+              </button>
+            </div>
+            <Input
+              placeholder={isCf ? "CF (Consumidor Final)" : "Ej. 12345678 (Solo números)"}
+              error={errors.cliente_dpi_nit?.message}
+              restrictType="nit"
+              maxLength={14}
+              disabled={isCf}
+              {...register("cliente_dpi_nit")}
+            />
+          </div>
 
           <Controller
             name="cliente_telefono"

@@ -71,7 +71,7 @@ export function ProveedoresList() {
       ),
     },
     {
-      header: "RUC / NIT",
+      header: "NIT",
       render: (p) => p.proveedor_ruc_nit || "—",
     },
     {
