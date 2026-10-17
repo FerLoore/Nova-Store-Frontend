@@ -10,22 +10,43 @@ import { getErrorMessage } from "../../utils/errors";
 import { colorSchema, priceSchema, stockSchema } from "../../utils/validators";
 import { useProductoVariantes } from "../../hooks/useProductos";
 
-const varianteFormSchema = z.object({
-  variante_talla: z
-    .string()
-    .trim()
-    .min(1, "La talla es obligatoria")
-    .max(10, "Máximo 10 caracteres"),
-  variante_color: colorSchema,
-  variante_sku: z
-    .string()
-    .trim()
-    .min(1, "El SKU es obligatorio")
-    .max(50, "Máximo 50 caracteres"),
-  variante_precio_compra: priceSchema("Precio de compra", false),
-  variante_precio_venta: priceSchema("Precio de venta", true),
-  variante_stock_minimo: stockSchema("Stock mínimo"),
-});
+export const TALLAS_DISPONIBLES = [
+  "XS", "S", "M", "L", "XL", "XXL", "XXXL",
+  "28", "30", "32", "34", "36", "38", "40", "42",
+  "Única"
+];
+
+const varianteFormSchema = z
+  .object({
+    variante_talla: z
+      .string()
+      .trim()
+      .min(1, "La talla es obligatoria")
+      .max(10, "Máximo 10 caracteres"),
+    variante_color: colorSchema,
+    variante_sku: z
+      .string()
+      .trim()
+      .min(1, "El SKU es obligatorio")
+      .max(50, "Máximo 50 caracteres"),
+    variante_precio_compra: priceSchema("Precio de compra", false),
+    variante_precio_venta: priceSchema("Precio de venta", true),
+    variante_stock_minimo: stockSchema("Stock mínimo"),
+  })
+  .refine(
+    (data) => {
+      const compra = Number(data.variante_precio_compra);
+      const venta = Number(data.variante_precio_venta);
+      if (!isNaN(compra) && !isNaN(venta) && compra > 0) {
+        return venta >= compra;
+      }
+      return true;
+    },
+    {
+      message: "El precio de venta no puede ser más bajo que el de compra",
+      path: ["variante_precio_venta"],
+    }
+  );
 
 export function VariantesManager({ producto, canManage = true, onClose }) {
   const productoId = producto?.producto_id;
@@ -212,12 +233,47 @@ export function VariantesManager({ producto, canManage = true, onClose }) {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <Input
-                label="Talla *"
-                placeholder="Ej: S, M, L, 32"
-                error={errors.variante_talla?.message}
-                {...register("variante_talla")}
-              />
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: "#5f5e5d",
+                    marginBottom: 5,
+                  }}
+                >
+                  Talla *
+                </label>
+                <select
+                  style={{
+                    width: "100%",
+                    borderRadius: 10,
+                    padding: "10px 14px",
+                    fontSize: 14,
+                    lineHeight: 1.4,
+                    border: errors.variante_talla ? "1px solid #b42318" : "1px solid #e5e7eb",
+                    background: "#ffffff",
+                    color: "#0c0a08",
+                    outline: "none",
+                  }}
+                  {...register("variante_talla")}
+                >
+                  <option value="">-- Talla --</option>
+                  {TALLAS_DISPONIBLES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                {errors.variante_talla && (
+                  <p style={{ marginTop: 4, fontSize: 12, color: "#b42318" }}>
+                    {errors.variante_talla.message}
+                  </p>
+                )}
+              </div>
               <Input
                 label="Color *"
                 placeholder="Ej: Negro, Azul"

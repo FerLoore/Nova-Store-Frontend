@@ -63,23 +63,22 @@ export const Input = forwardRef(function Input(
       }
     }
 
-    // Restricción: NIT (solo números, letra 'k'/'K' y máximo un guión '-', límite de 10 caracteres)
+    // Restricción: NIT (solo números y máximo un guión '-', o 'CF', SIN LETRAS)
     if (restrictType === "nit") {
       const currentVal = e.currentTarget.value || "";
       if (e.key === "-") {
-        if (currentVal.includes("-") || currentVal.length >= 10) {
+        if (currentVal.includes("-") || currentVal.length >= 14) {
           e.preventDefault();
           return;
         }
-      } else if (e.key === "k" || e.key === "K") {
-        if (currentVal.toLowerCase().includes("k") || currentVal.length >= 10) {
-          e.preventDefault();
-          return;
-        }
+      } else if (e.key.toLowerCase() === "c" && currentVal.length === 0) {
+        return;
+      } else if (e.key.toLowerCase() === "f" && currentVal.toUpperCase() === "C") {
+        return;
       } else if (!/^[0-9]$/.test(e.key)) {
         e.preventDefault();
         return;
-      } else if (currentVal.length >= 10) {
+      } else if (currentVal.replace(/-/g, "").length >= 12) {
         e.preventDefault();
         return;
       }
@@ -159,6 +158,21 @@ export const Input = forwardRef(function Input(
           }
           onKeyDown={handleKeyDown}
           onInput={(e) => {
+            if (restrictType === "letters") {
+              const clean = e.currentTarget.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, "");
+              if (clean !== e.currentTarget.value) {
+                e.currentTarget.value = clean;
+              }
+            }
+            if (restrictType === "nit") {
+              const upper = e.currentTarget.value.toUpperCase();
+              if (upper !== "C" && upper !== "CF") {
+                const clean = e.currentTarget.value.replace(/[^0-9-]/g, "");
+                if (clean !== e.currentTarget.value) {
+                  e.currentTarget.value = clean;
+                }
+              }
+            }
             if (type === "number" || restrictType === "numbers" || restrictType === "decimal") {
               if (e.currentTarget.value && Number(e.currentTarget.value) < 0) {
                 e.currentTarget.value = "0";

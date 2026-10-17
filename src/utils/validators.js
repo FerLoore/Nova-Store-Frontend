@@ -15,8 +15,9 @@ export const PATTERNS = {
   ROLE_NAME: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/,
   COLOR_NAME: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/,
 
-  // NIT: Solo números con opcionalmente la letra 'k'/'K' y un único guion, máximo 10 caracteres totales
-  NIT: /^[0-9]+(-?[0-9kK])?$/,
+  // NIT: Solo números (entre 4 y 12 dígitos, opcional guion antes del último dígito) o valor "CF"
+  // NO acepta letras
+  NIT: /^(CF|[0-9]{4,12}(-[0-9])?)$/i,
 };
 
 /**
@@ -68,17 +69,22 @@ export const categoryNameSchema = z
     "Solo se permiten letras, números y espacios (sin caracteres especiales)"
   );
 
-// Validación de NIT (solo números, letra 'K' y opcional guión '-', máximo 10 caracteres)
+// Validación de NIT (solo dígitos numéricos entre 4 y 12 caracteres, opcional guión, o la opción 'CF' sin letras adicionales)
 export const nitSchema = z
   .string()
   .trim()
-  .max(10, "El NIT no puede tener más de 10 caracteres")
+  .max(14, "El NIT no puede tener más de 14 caracteres")
   .refine(
     (val) => {
       if (!val) return true;
-      return PATTERNS.NIT.test(val) && val.length <= 10;
+      const upper = val.toUpperCase().trim();
+      if (upper === "CF" || upper === "C/F") return true;
+      // No debe contener ninguna letra
+      if (/[a-zA-Z]/.test(val)) return false;
+      const digitsOnly = val.replace(/-/g, "");
+      return digitsOnly.length >= 4 && digitsOnly.length <= 12 && /^[0-9]+(-[0-9])?$/.test(val);
     },
-    "El NIT solo permite números, la letra 'K' y opcionalmente el guión '-' (máximo 10 caracteres)"
+    "El NIT solo acepta números (4 a 12 dígitos) sin letras, o la opción 'CF'"
   )
   .optional()
   .or(z.literal(""));

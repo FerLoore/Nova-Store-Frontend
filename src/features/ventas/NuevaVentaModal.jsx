@@ -6,6 +6,7 @@ import { useProductos } from "../../hooks/useProductos";
 import { useInventario } from "../../hooks/useInventario";
 import { formatCurrency } from "../../utils/formatters";
 import { getErrorMessage } from "../../utils/errors";
+import { ClienteModal } from "../clientes/ClienteModal";
 import {
   HiOutlineBanknotes,
   HiOutlineCreditCard,
@@ -21,11 +22,12 @@ const METODOS_PAGO = [
 ];
 
 export function NuevaVentaModal({ isOpen, onClose, onSave }) {
-  const { clientes, isLoading: loadingClientes } = useClientes();
+  const { clientes, isLoading: loadingClientes, createCliente } = useClientes();
   const { productos, isLoading: loadingProds } = useProductos();
   const { inventario } = useInventario();
 
   const [selectedClienteId, setSelectedClienteId] = useState("");
+  const [isAddClienteOpen, setIsAddClienteOpen] = useState(false);
   const [skuSearch, setSkuSearch] = useState("");
   const [selectedVarianteId, setSelectedVarianteId] = useState("");
   const [itemCantidad, setItemCantidad] = useState("1");
@@ -234,6 +236,13 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
     }
   };
 
+  const handleSaveCliente = async (payload) => {
+    const res = await createCliente(payload);
+    if (res?.cliente_id) {
+      setSelectedClienteId(String(res.cliente_id));
+    }
+  };
+
   const handleClose = () => {
     if (!isSubmitting) {
       setSelectedClienteId("");
@@ -298,9 +307,27 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
 
         {/* 1. Selector de Cliente */}
         <div>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Cliente <span style={{ color: "#e11d48" }}>*</span>
-          </label>
+          <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.04em", margin: 0 }}>
+              Cliente <span style={{ color: "#e11d48" }}>*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsAddClienteOpen(true)}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#0c0a08",
+                background: "#f4f2f0",
+                border: "1px solid #d1d5db",
+                borderRadius: 6,
+                padding: "3px 10px",
+                cursor: "pointer",
+              }}
+            >
+              + Nuevo Cliente
+            </button>
+          </div>
           <select
             value={selectedClienteId}
             onChange={(e) => setSelectedClienteId(e.target.value)}
@@ -319,7 +346,7 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
             <option value="">-- Seleccionar Cliente --</option>
             {(clientes || []).map((c) => (
               <option key={c.cliente_id} value={c.cliente_id} style={{ color: "#111827" }}>
-                {c.cliente_nombre} {c.cliente_dpi_nit ? `(NIT/DPI: ${c.cliente_dpi_nit})` : ""}
+                {c.cliente_nombre} {c.cliente_dpi_nit ? `(NIT: ${c.cliente_dpi_nit})` : ""}
               </option>
             ))}
           </select>
@@ -435,8 +462,16 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
                 style={{
                   height: 40,
                   borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                  background: varianteSeleccionada ? "#f0fdf4" : "#f3f4f6",
+                  border: !varianteSeleccionada
+                    ? "1px solid #e5e7eb"
+                    : (varianteSeleccionada.stock_actual <= 0
+                        ? "1px solid #ef4444"
+                        : "1px solid #86efac"),
+                  background: !varianteSeleccionada
+                    ? "#f3f4f6"
+                    : (varianteSeleccionada.stock_actual <= 0
+                        ? "#fef2f2"
+                        : "#f0fdf4"),
                   padding: "0 10px",
                   display: "flex",
                   alignItems: "center",
@@ -446,8 +481,25 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
               >
                 {varianteSeleccionada ? (
                   <>
-                    <span style={{ fontWeight: 600, color: "#166534" }}>{varianteSeleccionada.variante_sku}</span>
-                    <span style={{ fontSize: 11, color: "#15803d" }}>Stock: {varianteSeleccionada.stock_actual}</span>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: varianteSeleccionada.stock_actual <= 0 ? "#dc2626" : "#166534",
+                      }}
+                    >
+                      {varianteSeleccionada.variante_sku}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: varianteSeleccionada.stock_actual <= 0 ? "#b91c1c" : "#15803d",
+                      }}
+                    >
+                      {varianteSeleccionada.stock_actual <= 0
+                        ? "Stock: 0 (Sin stock)"
+                        : `Stock: ${varianteSeleccionada.stock_actual}`}
+                    </span>
                   </>
                 ) : (
                   <span style={{ color: "#9ca3af" }}>Ninguno</span>
@@ -695,6 +747,14 @@ export function NuevaVentaModal({ isOpen, onClose, onSave }) {
           </Button>
         </div>
       </form>
+
+      {isAddClienteOpen && (
+        <ClienteModal
+          isOpen={isAddClienteOpen}
+          onClose={() => setIsAddClienteOpen(false)}
+          onSave={handleSaveCliente}
+        />
+      )}
     </Modal>
   );
 }

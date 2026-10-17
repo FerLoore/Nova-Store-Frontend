@@ -13,6 +13,13 @@ export function getErrorMessage(err) {
     return data.message;
   }
   if (typeof data === "string") {
+    if (data.trim().startsWith("<") || data.includes("<!DOCTYPE") || data.includes("<pre>")) {
+      const match = data.match(/<pre>(.*?)<\/pre>/s);
+      if (match) {
+        return match[1].replace(/<br\s*\/?>/gi, " ").trim();
+      }
+      return `Error del servidor (${err.response.status}): ${err.response.statusText || "Respuesta no esperada"}`;
+    }
     return data;
   }
   return err.message || "Error al procesar la solicitud";
