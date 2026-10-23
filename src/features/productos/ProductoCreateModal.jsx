@@ -6,6 +6,7 @@ import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
+import { LuTrash2, LuPlus } from "react-icons/lu";
 import { CategoriaQuickModal } from "./CategoriaQuickModal";
 import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
@@ -209,9 +210,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       type="button"
                       onClick={() => setCatModalOpen(true)}
                       style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", color: "#0c0a08", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
-                    >
-                      + Nueva categoría
-                    </button>
+                     className="inline-flex items-center gap-1 cursor-pointer"><LuPlus className="w-3 h-3" /> Nueva categoría</button>
                   </div>
                   <Select
                     options={categoriaOptions}
@@ -303,9 +302,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                         type="button"
                         onClick={() => remove(idx)}
                         style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", color: "#b42318", background: "none", border: "none", cursor: "pointer" }}
-                      >
-                        ✕ Quitar
-                      </button>
+                       className="inline-flex items-center gap-1 cursor-pointer"><LuTrash2 className="w-3 h-3" /> Quitar</button>
                     )}
                   </div>
 

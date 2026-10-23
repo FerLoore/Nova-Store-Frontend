@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { LuX } from "react-icons/lu";
 
 export function Modal({
   isOpen,
@@ -89,7 +90,7 @@ export function Modal({
             onMouseLeave={(e) => (e.currentTarget.style.color = "#5f5e5d")}
             aria-label="Cerrar modal"
           >
-            ✕
+            <LuX className="w-4 h-4" />
           </button>
         </div>
 
