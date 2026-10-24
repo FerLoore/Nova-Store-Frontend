@@ -13,6 +13,9 @@ import { AprobacionesPage } from "../pages/AprobacionesPage";
 import { VentasPage } from "../pages/VentasPage";
 import { ReportesPage } from "../pages/ReportesPage";
 import { AuditoriaPage } from "../pages/AuditoriaPage";
+import { InventarioPage } from "../pages/InventarioPage";
+import { ComprasPage } from "../pages/ComprasPage";
+import { ProveedoresPage } from "../pages/ProveedoresPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
@@ -73,6 +76,15 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+            {/* Módulo Inventario y Stock */}
+        <Route path="inventario" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><InventarioPage /></ProtectedRoute>} />
+
+            {/* Módulo Proveedores */}
+        <Route path="proveedores" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ProveedoresPage /></ProtectedRoute>} />
+
+        {/* Módulo Compras */}
+        <Route path="compras" element={<ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}><ComprasPage /></ProtectedRoute>} />
 
         {/* Módulo Marcas */}
         <Route

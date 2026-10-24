@@ -19,7 +19,11 @@ export function AuditoriaList() {
         (item.auditoria_campo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.usuario?.usuario_nombre || "").toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchAccion = !filterAccion || item.auditoria_accion === filterAccion;
+      const matchAccion =
+        !filterAccion ||
+        item.auditoria_accion === filterAccion ||
+        (filterAccion === "APROBAR" && (item.auditoria_campo === "PED_ESTADO" || item.auditoria_accion === "APROBAR")) ||
+        (filterAccion === "DESCUENTO" && (item.auditoria_campo === "PED_DESCUENTO" || item.auditoria_accion === "DESCUENTO"));
 
       return matchSearch && matchAccion;
     });
@@ -63,7 +67,12 @@ export function AuditoriaList() {
       accessor: "auditoria_accion",
       render: (a) => {
         let badgeColor = "bg-gray-100 text-gray-800 border-gray-300";
-        if (a.auditoria_accion === "APROBAR") {
+        if (a.auditoria_campo === "PED_ESTADO" || a.auditoria_accion === "APROBAR") {
+          return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border bg-emerald-100 text-emerald-800 border-emerald-300 font-bold">APROBACIÓN</span>;
+        } else if (a.auditoria_campo === "PED_DESCUENTO" || a.auditoria_accion === "DESCUENTO") {
+          return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border bg-amber-100 text-amber-900 border-amber-300 font-bold">DESCUENTO</span>;
+        }
+        if (false) {
           badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300 font-bold";
         } else if (a.auditoria_accion === "DESCUENTO") {
           badgeColor = "bg-amber-100 text-amber-900 border-amber-300 font-bold";

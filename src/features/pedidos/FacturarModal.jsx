@@ -50,7 +50,7 @@ export function FacturarModal({
 
   const handleConfirm = () => {
     if (onClearError) onClearError();
-    onConfirm(pedido.pedido_id, metodoPago);
+    onConfirm(metodoPago, pedido.pedido_id);
   };
 
   return (

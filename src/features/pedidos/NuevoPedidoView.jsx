@@ -1,4 +1,4 @@
-Ôªøimport { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useClientes } from "../../hooks/useClientes";
 import { usePedidos } from "../../hooks/usePedidos";
@@ -44,7 +44,7 @@ export function NuevoPedidoView() {
     });
   }, [clientes, clienteSearch]);
 
-  // Cargar cat√°logo completo de variantes
+  // Cargar cat·logo completo de variantes
   const handleLoadAllVariantes = async () => {
     setIsSearchingVariantes(true);
     try {
@@ -52,23 +52,23 @@ export function NuevoPedidoView() {
       const list = Array.isArray(results) ? results : [];
       setVariantesResults(list);
       if (list.length > 0) {
-        toast.success(`Cat√°logo cargado: ${list.length} variante${list.length === 1 ? "" : "s"} disponible${list.length === 1 ? "" : "s"}`, {
+        toast.success(`Cat·logo cargado: ${list.length} variante${list.length === 1 ? "" : "s"} disponible${list.length === 1 ? "" : "s"}`, {
           id: "catalogo-loaded",
         });
       } else {
-        toast("No se encontraron variantes activas en el cat√°logo", {
+        toast("No se encontraron variantes activas en el cat·logo", {
           id: "catalogo-empty",
         });
       }
     } catch (err) {
-      console.error("Error cargando cat√°logo:", err);
-      toast.error("No se pudo cargar el cat√°logo de variantes");
+      console.error("Error cargando cat·logo:", err);
+      toast.error("No se pudo cargar el cat·logo de variantes");
     } finally {
       setIsSearchingVariantes(false);
     }
   };
 
-  // Buscar variantes al presionar Enter o escribir (o cargar todo si est√° vac√≠o)
+  // Buscar variantes al presionar Enter o escribir (o cargar todo si est· vacÌo)
   const handleSearchVariantes = async (term) => {
     const q = term !== undefined ? term : varianteSearch;
     if (!q || !q.trim()) {
@@ -157,7 +157,7 @@ export function NuevoPedidoView() {
     setDescuentoInput("0");
   };
 
-  // C√°lculos totales
+  // C·lculos totales
   const subtotalBruto = useMemo(() => {
     const sum = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
     return Math.round(sum * 100) / 100;
@@ -229,7 +229,7 @@ export function NuevoPedidoView() {
             Nuevo Pedido
           </h1>
           <p className="text-sm text-[#5f5e5d] mt-1">
-            Buscador de clientes y variantes con c√°lculo autom√°tico de totales y solicitud de aprobaci√≥n por descuento.
+            Buscador de clientes y variantes con c·lculo autom·tico de totales y solicitud de aprobaciÛn por descuento.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -242,9 +242,9 @@ export function NuevoPedidoView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Columna Izquierda: Selecci√≥n de Cliente y Buscador de Variantes */}
+        {/* Columna Izquierda: SelecciÛn de Cliente y Buscador de Variantes */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Card 1: Selecci√≥n de Cliente */}
+          {/* Card 1: SelecciÛn de Cliente */}
           <div className="bg-paper border border-hairline rounded-2xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-semibold tracking-wider text-[#5f5e5d] uppercase flex items-center gap-2">
@@ -297,7 +297,7 @@ export function NuevoPedidoView() {
             ) : (
               <div className="relative">
                 <Input
-                  placeholder="Buscar cliente por nombre, DPI, NIT o tel√©fono..."
+                  placeholder="Buscar cliente por nombre, DPI, NIT o telÈfono..."
                   value={clienteSearch}
                   onChange={(e) => {
                     setClienteSearch(e.target.value);
@@ -332,7 +332,7 @@ export function NuevoPedidoView() {
                               {c.cliente_nombre}
                             </div>
                             <div className="text-[11px] text-[#5f5e5d] mt-0.5">
-                              NIT/DPI: {c.cliente_dpi_nit || "C/F"} ‚Ä¢ Tel: {c.cliente_telefono || "S/N"}
+                              NIT/DPI: {c.cliente_dpi_nit || "C/F"} ï Tel: {c.cliente_telefono || "S/N"}
                             </div>
                           </li>
                         ))}
@@ -348,7 +348,7 @@ export function NuevoPedidoView() {
           <div className="bg-paper border border-hairline rounded-2xl p-5 shadow-xs">
             <span className="text-[11px] font-semibold tracking-wider text-[#5f5e5d] uppercase flex items-center gap-2 mb-3">
               <span className="w-2 h-2 rounded-full bg-volt"></span>
-              2. Cat√°logo de Variantes (SKU / Nombre)
+              2. Cat·logo de Variantes (SKU / Nombre)
             </span>
 
             <div className="flex gap-2 mb-4">
@@ -374,7 +374,7 @@ export function NuevoPedidoView() {
               </Button>
             </div>
 
-            {/* Resultados de b√∫squeda */}
+            {/* Resultados de b˙squeda */}
             {isSearchingVariantes ? (
               <div className="py-8 text-center text-xs text-[#5f5e5d]">
                 Buscando productos y variantes...
@@ -383,7 +383,7 @@ export function NuevoPedidoView() {
               <div className="py-8 text-center bg-[#faf9f8] border border-dashed border-hairline rounded-xl p-4">
                 <p className="text-xs text-[#5f5e5d]">
                   {varianteSearch.trim()
-                    ? "No se encontraron variantes coincidentes con la b√∫squeda."
+                    ? "No se encontraron variantes coincidentes con la b˙squeda."
                     : "Ingresa un SKU (ej: CAM-BLA-M) o nombre de producto para ver variantes disponibles."}
                 </p>
                 {!varianteSearch.trim() && (
@@ -392,28 +392,45 @@ export function NuevoPedidoView() {
                     className="mt-3 text-xs"
                     onClick={() => handleSearchVariantes(" ")}
                   >
-                    Cargar Cat√°logo Completo
+                    Cargar Cat·logo Completo
                   </Button>
                 )}
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto space-y-2 pr-1">
-                {variantesResults.map((v) => (
+                {variantesResults.map((v) => {
+                  const stockDisp = Number(v.stock_disponible ?? 0);
+                  const sinStock = stockDisp <= 0;
+                  const stockBajo = stockDisp > 0 && stockDisp <= 5;
+                  return (
                   <div
                     key={v.variante_id}
-                    className="p-3 bg-white border border-hairline rounded-xl hover:border-gray-400 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                    className={`p-3 bg-white border rounded-xl transition-all flex items-center justify-between gap-3 shadow-2xs ${sinStock ? "border-red-200 bg-red-50 opacity-75" : "border-hairline hover:border-gray-400"}`}
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <h4 className="font-semibold text-xs text-[#0c0a08] truncate">
                         {v.producto?.producto_nombre || "Producto"}
                       </h4>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="px-1.5 py-0.5 rounded bg-gray-100 text-[#0c0a08] text-[10px] font-mono font-medium">
                           {v.variante_sku}
                         </span>
                         <span className="text-[11px] text-[#5f5e5d]">
-                          Talla: <strong>{v.variante_talla}</strong> ‚Ä¢ Color: <strong>{v.variante_color}</strong>
+                          Talla: <strong>{v.variante_talla}</strong>
                         </span>
+                        {sinStock ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 border border-red-300">
+                            Sin stock
+                          </span>
+                        ) : stockBajo ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300">
+                            Stock: {stockDisp}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                            Stock: {stockDisp}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -422,15 +439,19 @@ export function NuevoPedidoView() {
                       </span>
                       <Button
                         variant="compact"
-                        onClick={() => handleAddToCart(v)}
+                        onClick={() => !sinStock && handleAddToCart(v)}
+                        disabled={sinStock}
+                        title={sinStock ? "Sin stock disponible" : `Agregar al pedido (${stockDisp} disponibles)`}
                       >
-                        + Agregar
+                        {sinStock ? "Sin stock" : "+ Agregar"}
                       </Button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
+
           </div>
         </div>
 
@@ -440,19 +461,22 @@ export function NuevoPedidoView() {
             <div className="flex items-center justify-between pb-3 border-b border-hairline mb-4">
               <span className="text-[11px] font-semibold tracking-wider text-[#5f5e5d] uppercase flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-volt"></span>
-                3. Carrito del Pedido ({cartItems.length} {cartItems.length === 1 ? "art√≠culo" : "art√≠culos"})
+                3. Carrito del Pedido ({cartItems.length} {cartItems.length === 1 ? "artÌculo" : "artÌculos"})
               </span>
             </div>
 
             {/* Lista de Items en Carrito */}
             {cartItems.length === 0 ? (
               <EmptyState
-                title="Carrito Vac√≠o"
-                description="Busca variantes en el cat√°logo y agr√©galas para armar el pedido."
+                title="Carrito VacÌo"
+                description="Busca variantes en el cat·logo y agrÈgalas para armar el pedido."
               />
             ) : (
               <div className="space-y-3 max-h-72 overflow-y-auto pr-1 mb-4">
-                {cartItems.map((item) => (
+                {cartItems.map((item) => {
+                  const stockDisp = Number(item.variante.stock_disponible ?? 0);
+                  const cantidadExcede = item.cantidad >= stockDisp;
+                  return (
                   <div
                     key={item.variante.variante_id}
                     className="p-3 bg-white border border-hairline rounded-xl flex items-center justify-between gap-2"
@@ -464,8 +488,13 @@ export function NuevoPedidoView() {
                       <div className="text-[10px] text-[#5f5e5d]">
                         SKU: <span className="font-mono">{item.variante.variante_sku}</span> ({item.variante.variante_talla} / {item.variante.variante_color})
                       </div>
-                      <div className="text-xs font-semibold text-[#0c0a08] mt-1">
-                        {formatCurrency(item.subtotal)}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs font-semibold text-[#0c0a08]">{formatCurrency(item.subtotal)}</span>
+                        {cantidadExcede && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-100 text-amber-700 border border-amber-300">
+                            Max. {stockDisp}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -500,11 +529,13 @@ export function NuevoPedidoView() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
-            {/* Secci√≥n de Descuento (PED_DESCUENTO) */}
+
+            {/* SecciÛn de Descuento (PED_DESCUENTO) */}
             <div className="pt-4 border-t border-hairline space-y-3">
               <div>
                 <label className="block text-[11px] font-semibold tracking-wider text-[#5f5e5d] uppercase mb-1.5">
@@ -527,7 +558,7 @@ export function NuevoPedidoView() {
                 </div>
               </div>
 
-              {/* Botones de Presets de Descuento R√°pido */}
+              {/* Botones de Presets de Descuento R·pido */}
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
@@ -572,14 +603,14 @@ export function NuevoPedidoView() {
                 )}
               </div>
 
-              {/* Banner Din√°mico de Estado seg√∫n el Descuento */}
+              {/* Banner Din·mico de Estado seg˙n el Descuento */}
               {requiresApproval ? (
                 <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2 animate-fadeIn">
                   <LuTriangleAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block font-semibold">Requiere Aprobaci√≥n Gerencial</strong>
+                    <strong className="block font-semibold">Requiere AprobaciÛn Gerencial</strong>
                     <span>
-                      Al aplicar un descuento de {formatCurrency(descuentoNumerico)}, el pedido se guardar√° con estado{" "}
+                      Al aplicar un descuento de {formatCurrency(descuentoNumerico)}, el pedido se guardar· con estado{" "}
                       <strong className="font-mono bg-amber-100 px-1 py-0.5 rounded text-[10px]">
                         ESPERANDO_APROBACION
                       </strong>{" "}
@@ -591,9 +622,9 @@ export function NuevoPedidoView() {
                 <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-xs text-emerald-900 flex items-start gap-2 animate-fadeIn">
                   <LuCircleCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block font-semibold">Aprobaci√≥n Inmediata</strong>
+                    <strong className="block font-semibold">AprobaciÛn Inmediata</strong>
                     <span>
-                      Sin descuento aplicado. El pedido se guardar√° directamente como{" "}
+                      Sin descuento aplicado. El pedido se guardar· directamente como{" "}
                       <strong className="font-mono bg-emerald-100 px-1 py-0.5 rounded text-[10px]">
                         APROBADO
                       </strong>.
@@ -620,14 +651,14 @@ export function NuevoPedidoView() {
                 </div>
               </div>
 
-              {/* Bot√≥n de Env√≠o */}
+              {/* BotÛn de EnvÌo */}
               <Button
                 variant="primary"
                 className="w-full py-3 text-sm font-bold tracking-wide"
                 disabled={isCreating || cartItems.length === 0 || !selectedCliente}
                 onClick={handleSubmitPedido}
               >
-                {isCreating ? "Registrando Pedido..." : requiresApproval ? "Enviar Pedido para Aprobaci√≥n" : "Crear Pedido Aprobado"}
+                {isCreating ? "Registrando Pedido..." : requiresApproval ? "Enviar Pedido para AprobaciÛn" : "Crear Pedido Aprobado"}
               </Button>
             </div>
           </div>

@@ -22,7 +22,7 @@ export function AprobacionesView() {
     usuario?.rol_id === 6;
 
   // Filtros: fecha, cliente, estado
-  const [filterEstado, setFilterEstado] = useState("ESPERANDO_APROBACION");
+  const [filterEstado, setFilterEstado] = useState("");
   const [filterCliente, setFilterCliente] = useState("");
   const [filterFecha, setFilterFecha] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +63,8 @@ export function AprobacionesView() {
     }
   };
 
-  const handleConfirmFacturar = async (pagoMetodo) => {
+  const handleConfirmFacturar = async (arg1, arg2) => {
+    const pagoMetodo = typeof arg1 === "string" ? arg1 : (typeof arg2 === "string" ? arg2 : "EFECTIVO");
     if (!pedidoToFacturar) return;
     try {
       await facturarPedido({
