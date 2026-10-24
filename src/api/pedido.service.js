@@ -49,4 +49,17 @@ export const pedidoService = {
     const { data } = await http.get("/nova-variante", { params });
     return data;
   },
+
+
+  /**
+   * Factura un pedido APROBADO: genera la venta, pago y movimientos de inventario.
+   * @param {number|string} idPedido
+   * @param {"EFECTIVO"|"TARJETA"|"TRANSFERENCIA"} pagoMetodo
+   */
+  async facturarPedido(idPedido, pagoMetodo) {
+    const { data } = await http.post(`/ventas/facturar/${idPedido}`, {
+      pago_metodo: pagoMetodo,
+    });
+    return data;
+  },
 };

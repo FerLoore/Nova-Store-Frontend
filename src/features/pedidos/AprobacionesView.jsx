@@ -5,8 +5,9 @@ import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PedidoDetalleModal } from "./PedidoDetalleModal";
+import { FacturarModal } from "./FacturarModal";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { LuLock, LuCircleCheck, LuCheck, LuEye, LuRefreshCw, LuSearch } from "react-icons/lu";
+import { LuLock, LuCircleCheck, LuCheck, LuEye, LuRefreshCw, LuSearch, LuReceipt } from "react-icons/lu";
 
 export function AprobacionesView() {
   const { usuario } = useAuth();
@@ -24,13 +25,15 @@ export function AprobacionesView() {
   const [filterEstado, setFilterEstado] = useState("ESPERANDO_APROBACION");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { pedidos, isLoading, isError, refetch, aprobarPedido, isApproving } = usePedidos({
+  const { pedidos, isLoading, isError, refetch, aprobarPedido, isApproving, facturarPedido, isFacturando } = usePedidos({
     estado: filterEstado || undefined,
     enabled: isGerenteOrAdmin,
   });
 
   const [selectedPedidoDetalle, setSelectedPedidoDetalle] = useState(null);
   const [pedidoToApprove, setPedidoToApprove] = useState(null);
+  const [pedidoToFacturar, setPedidoToFacturar] = useState(null);
+  const [errorInventario, setErrorInventario] = useState(null);
 
   // Filtrado por buscador en el cliente
   const filteredPedidos = useMemo(() => {
@@ -54,6 +57,26 @@ export function AprobacionesView() {
       refetch();
     } catch (err) {
       console.error("Error al aprobar:", err);
+    }
+  };
+
+  const handleConfirmFacturar = async (idPedido, pagoMetodo) => {
+    setErrorInventario(null);
+    try {
+      await facturarPedido({ idPedido, pagoMetodo });
+      setPedidoToFacturar(null);
+      refetch();
+    } catch (err) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message ?? err?.message ?? "Error al facturar";
+      if (status === 400) {
+        // Error de inventario: mostrar alerta roja en el modal, NO cerrar
+        setErrorInventario(msg);
+      } else {
+        // Error genérico: cerrar y toast (toast se dispara desde el hook)
+        setPedidoToFacturar(null);
+        setErrorInventario(null);
+      }
     }
   };
 
@@ -143,9 +166,16 @@ export function AprobacionesView() {
             </span>
           );
         }
+        if (p.pedido_estado === "APROBADO") {
+          return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <LuCircleCheck className="w-3 h-3 text-emerald-600" /> APROBADO
+            </span>
+          );
+        }
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <LuCircleCheck className="w-3 h-3 text-emerald-600" /> APROBADO
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+            <LuReceipt className="w-3 h-3 text-blue-600" /> FACTURADO
           </span>
         );
       },
@@ -157,16 +187,24 @@ export function AprobacionesView() {
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
-            className="text-[11px] py-1 px-2.5"
+            className="text-[11px] py-1 px-2.5 inline-flex items-center gap-1"
             onClick={() => setSelectedPedidoDetalle(p)}
-           className="text-[11px] py-1 px-2.5 inline-flex items-center gap-1"><LuEye className="w-3.5 h-3.5" /> Ver Detalle</Button>
+          ><LuEye className="w-3.5 h-3.5" /> Ver Detalle</Button>
           {p.pedido_estado === "ESPERANDO_APROBACION" && (
             <Button
               variant="primary"
-              className="text-[11px] py-1 px-3"
+              className="text-[11px] py-1 px-3 inline-flex items-center gap-1"
               disabled={isApproving}
               onClick={() => setPedidoToApprove(p)}
-             className="text-[11px] py-1 px-3 inline-flex items-center gap-1"><LuCheck className="w-3.5 h-3.5" /> Aprobar</Button>
+            ><LuCheck className="w-3.5 h-3.5" /> Aprobar</Button>
+          )}
+          {p.pedido_estado === "APROBADO" && (
+            <Button
+              variant="primary"
+              className="text-[11px] py-1 px-3 inline-flex items-center gap-1"
+              disabled={isFacturando}
+              onClick={() => { setErrorInventario(null); setPedidoToFacturar(p); }}
+            ><LuReceipt className="w-3.5 h-3.5" /> Facturar</Button>
           )}
         </div>
       ),
@@ -278,6 +316,16 @@ export function AprobacionesView() {
         cancelText="Cancelar"
         confirmVariant="primary"
         isLoading={isApproving}
+      />
+      {/* Modal de Facturación */}
+      <FacturarModal
+        isOpen={Boolean(pedidoToFacturar)}
+        onClose={() => { setPedidoToFacturar(null); setErrorInventario(null); }}
+        pedido={pedidoToFacturar}
+        onConfirm={handleConfirmFacturar}
+        isFacturando={isFacturando}
+        errorInventario={errorInventario}
+        onClearError={() => setErrorInventario(null)}
       />
     </div>
   );

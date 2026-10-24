@@ -49,6 +49,27 @@ export function usePedidos(options = {}) {
     },
   });
 
+  const facturarMutation = useMutation({
+    mutationFn: ({ idPedido, pagoMetodo }) =>
+      pedidoService.facturarPedido(idPedido, pagoMetodo),
+    onSuccess: (data, { idPedido }) => {
+      queryClient.invalidateQueries({ queryKey: ["pedidos"] });
+      toast.success(
+        `Pedido #${idPedido} facturado exitosamente como Venta #${data?.venta_id ?? ""}`,
+        { duration: 5000 }
+      );
+    },
+    onError: (err) => {
+      // El error HTTP 400 de inventario se muestra especialmente en la UI del componente.
+      // Aquí solo avisamos si NO es un 400 (esos los maneja el componente directamente).
+      if (err?.response?.status !== 400) {
+        toast.error(getErrorMessage(err));
+      }
+    },
+  });
+
+
+
   return {
     ...pedidosQuery,
     pedidos: pedidosQuery.data ?? [],
@@ -56,5 +77,7 @@ export function usePedidos(options = {}) {
     isCreating: createMutation.isPending,
     aprobarPedido: aprobarMutation.mutateAsync,
     isApproving: aprobarMutation.isPending,
+    facturarPedido: facturarMutation.mutateAsync,
+    isFacturando: facturarMutation.isPending,
   };
 }
