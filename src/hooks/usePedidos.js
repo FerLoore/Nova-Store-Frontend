@@ -5,11 +5,11 @@ import { getErrorMessage } from "../utils/errors";
 
 export function usePedidos(options = {}) {
   const queryClient = useQueryClient();
-  const { estado, cliente_id, enabled = true } = options;
+  const { estado, cliente, cliente_id, fecha, enabled = true } = options;
 
   const pedidosQuery = useQuery({
-    queryKey: ["pedidos", { estado, cliente_id }],
-    queryFn: () => pedidoService.getPedidos({ estado, cliente_id }),
+    queryKey: ["pedidos", { estado, cliente, cliente_id, fecha }],
+    queryFn: () => pedidoService.getPedidos({ estado, cliente: cliente || cliente_id, fecha }),
     enabled,
     refetchInterval: options.refetchInterval || false,
   });
@@ -18,16 +18,15 @@ export function usePedidos(options = {}) {
     mutationFn: pedidoService.createPedido,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
+      queryClient.invalidateQueries({ queryKey: ["auditoria"] });
       const estado = data?.pedido?.pedido_estado;
       if (estado === "ESPERANDO_APROBACION") {
         toast.success("Pedido enviado a revisión gerencial (Esperando Aprobación)", {
           duration: 5000,
-          
         });
       } else {
         toast.success("¡Pedido creado y aprobado exitosamente!", {
           duration: 4000,
-          
         });
       }
     },
@@ -40,9 +39,8 @@ export function usePedidos(options = {}) {
     mutationFn: (id) => pedidoService.aprobarPedido(id),
     onSuccess: (data, id) => {
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
-      toast.success(`Pedido #${id} aprobado exitosamente`, {
-        
-      });
+      queryClient.invalidateQueries({ queryKey: ["auditoria"] });
+      toast.success(`Pedido #${id} aprobado exitosamente`);
     },
     onError: (err) => {
       toast.error(getErrorMessage(err));
@@ -54,21 +52,19 @@ export function usePedidos(options = {}) {
       pedidoService.facturarPedido(idPedido, pagoMetodo),
     onSuccess: (data, { idPedido }) => {
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
+      queryClient.invalidateQueries({ queryKey: ["ventas"] });
+      queryClient.invalidateQueries({ queryKey: ["reportes"] });
       toast.success(
         `Pedido #${idPedido} facturado exitosamente como Venta #${data?.venta_id ?? ""}`,
         { duration: 5000 }
       );
     },
     onError: (err) => {
-      // El error HTTP 400 de inventario se muestra especialmente en la UI del componente.
-      // Aquí solo avisamos si NO es un 400 (esos los maneja el componente directamente).
       if (err?.response?.status !== 400) {
         toast.error(getErrorMessage(err));
       }
     },
   });
-
-
 
   return {
     ...pedidosQuery,

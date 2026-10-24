@@ -12,6 +12,9 @@ const ADMIN_DEFAULT_MENU = [
   { clave: "productos", etiqueta: "Productos", ruta: "/productos" },
   { clave: "pedidos", etiqueta: "Nuevo Pedido", ruta: "/pedidos" },
   { clave: "aprobaciones", etiqueta: "Aprobaciones", ruta: "/pedidos/aprobaciones" },
+  { clave: "ventas", etiqueta: "Ventas", ruta: "/ventas" },
+  { clave: "reportes", etiqueta: "Reportes", ruta: "/reportes" },
+  { clave: "auditoria", etiqueta: "Auditoría", ruta: "/auditoria" },
 ];
 
 const resolveMenu = (user, serverMenu) => {
@@ -30,9 +33,19 @@ const resolveMenu = (user, serverMenu) => {
     baseMenu.push({ clave: "pedidos", etiqueta: "Nuevo Pedido", ruta: "/pedidos" });
   }
 
-  // Si es gerente, asegurar acceso al módulo de aprobaciones
-  if (esGerente && !baseMenu.some((m) => m.ruta === "/pedidos/aprobaciones")) {
-    baseMenu.push({ clave: "aprobaciones", etiqueta: "Aprobaciones", ruta: "/pedidos/aprobaciones" });
+  // Asegurar ventas
+  if (!baseMenu.some((m) => m.ruta === "/ventas")) {
+    baseMenu.push({ clave: "ventas", etiqueta: "Ventas", ruta: "/ventas" });
+  }
+
+  // Si es gerente, asegurar acceso a aprobaciones y reportes
+  if (esGerente) {
+    if (!baseMenu.some((m) => m.ruta === "/pedidos/aprobaciones")) {
+      baseMenu.push({ clave: "aprobaciones", etiqueta: "Aprobaciones", ruta: "/pedidos/aprobaciones" });
+    }
+    if (!baseMenu.some((m) => m.ruta === "/reportes")) {
+      baseMenu.push({ clave: "reportes", etiqueta: "Reportes", ruta: "/reportes" });
+    }
   }
 
   return baseMenu;

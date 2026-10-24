@@ -10,6 +10,9 @@ import { ProductosPage } from "../pages/ProductosPage";
 import { MarcasPage } from "../pages/MarcasPage";
 import { NuevoPedidoPage } from "../pages/NuevoPedidoPage";
 import { AprobacionesPage } from "../pages/AprobacionesPage";
+import { VentasPage } from "../pages/VentasPage";
+import { ReportesPage } from "../pages/ReportesPage";
+import { AuditoriaPage } from "../pages/AuditoriaPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
@@ -117,6 +120,36 @@ export function AppRoutes() {
           }
         />
 
+        {/* Módulo Ventas */}
+        <Route
+          path="ventas"
+          element={
+            <ProtectedRoute>
+              <VentasPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Reportes */}
+        <Route
+          path="reportes"
+          element={
+            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+              <ReportesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Auditoría (Solo Admin) */}
+        <Route
+          path="auditoria"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AuditoriaPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* 404 dentro del layout */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
@@ -126,4 +159,3 @@ export function AppRoutes() {
     </Routes>
   );
 }
-

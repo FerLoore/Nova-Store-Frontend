@@ -7,7 +7,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PedidoDetalleModal } from "./PedidoDetalleModal";
 import { FacturarModal } from "./FacturarModal";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { LuLock, LuCircleCheck, LuCheck, LuEye, LuRefreshCw, LuSearch, LuReceipt } from "react-icons/lu";
+import { LuLock, LuCircleCheck, LuCheck, LuEye, LuRefreshCw, LuSearch, LuReceipt, LuFilter, LuCalendar, LuX } from "react-icons/lu";
 
 export function AprobacionesView() {
   const { usuario } = useAuth();
@@ -21,12 +21,16 @@ export function AprobacionesView() {
     usuario?.rol_id === 5 ||
     usuario?.rol_id === 6;
 
-  // Filtro de estado: por defecto solo los que esperan aprobación
+  // Filtros: fecha, cliente, estado
   const [filterEstado, setFilterEstado] = useState("ESPERANDO_APROBACION");
+  const [filterCliente, setFilterCliente] = useState("");
+  const [filterFecha, setFilterFecha] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   const { pedidos, isLoading, isError, refetch, aprobarPedido, isApproving, facturarPedido, isFacturando } = usePedidos({
     estado: filterEstado || undefined,
+    cliente: filterCliente || undefined,
+    fecha: filterFecha || undefined,
     enabled: isGerenteOrAdmin,
   });
 
@@ -35,7 +39,7 @@ export function AprobacionesView() {
   const [pedidoToFacturar, setPedidoToFacturar] = useState(null);
   const [errorInventario, setErrorInventario] = useState(null);
 
-  // Filtrado por buscador en el cliente
+  // Filtrado adicional local por texto (ID, cliente o vendedor)
   const filteredPedidos = useMemo(() => {
     const list = Array.isArray(pedidos) ? pedidos : [];
     if (!searchTerm.trim()) return list;
@@ -48,49 +52,52 @@ export function AprobacionesView() {
     });
   }, [pedidos, searchTerm]);
 
-  // Manejo de la aprobación directa
   const handleConfirmApprove = async () => {
     if (!pedidoToApprove) return;
     try {
       await aprobarPedido(pedidoToApprove.pedido_id);
       setPedidoToApprove(null);
       refetch();
-    } catch (err) {
-      console.error("Error al aprobar:", err);
+    } catch {
+      // toast manejado por el hook
     }
   };
 
-  const handleConfirmFacturar = async (idPedido, pagoMetodo) => {
-    setErrorInventario(null);
+  const handleConfirmFacturar = async (pagoMetodo) => {
+    if (!pedidoToFacturar) return;
     try {
-      await facturarPedido({ idPedido, pagoMetodo });
+      await facturarPedido({
+        idPedido: pedidoToFacturar.pedido_id,
+        pagoMetodo,
+      });
       setPedidoToFacturar(null);
+      setErrorInventario(null);
       refetch();
     } catch (err) {
-      const status = err?.response?.status;
-      const msg = err?.response?.data?.message ?? err?.message ?? "Error al facturar";
-      if (status === 400) {
-        // Error de inventario: mostrar alerta roja en el modal, NO cerrar
-        setErrorInventario(msg);
-      } else {
-        // Error genérico: cerrar y toast (toast se dispara desde el hook)
-        setPedidoToFacturar(null);
-        setErrorInventario(null);
+      if (err?.response?.status === 400 && err?.response?.data?.error_tipo === "SIN_INVENTARIO") {
+        setErrorInventario(err.response.data);
       }
     }
   };
 
+  const handleClearFilters = () => {
+    setFilterEstado("");
+    setFilterCliente("");
+    setFilterFecha("");
+    setSearchTerm("");
+  };
+
+  const hasActiveFilters = Boolean(filterEstado || filterCliente || filterFecha || searchTerm);
+
   if (!isGerenteOrAdmin) {
     return (
       <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto">
           <LuLock className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-[#0c0a08]">
-          Acceso Restringido a Aprobaciones
-        </h2>
-        <p className="text-sm text-[#5f5e5d] max-w-md mx-auto">
-          Esta vista está reservada exclusivamente para usuarios con rol de <strong>Gerente</strong> o <strong>Administrador</strong>. Tu rol actual es: <span className="font-mono text-ink uppercase font-semibold">{usuario?.rol_nombre || "Sin rol"}</span>.
+        <h2 className="text-xl font-bold text-[#0c0a08]">Acceso Restringido</h2>
+        <p className="text-sm text-[#5f5e5d]">
+          Esta vista es exclusiva para usuarios con rol de <strong>Gerente</strong> o <strong>Administrador</strong>.
         </p>
       </div>
     );
@@ -101,7 +108,7 @@ export function AprobacionesView() {
       header: "Pedido",
       accessor: "pedido_id",
       render: (p) => (
-        <span className="font-mono font-bold text-xs text-ink bg-gray-100 px-2 py-1 rounded">
+        <span className="font-mono text-xs font-bold text-[#0c0a08]">
           #{p.pedido_id}
         </span>
       ),
@@ -110,7 +117,9 @@ export function AprobacionesView() {
       header: "Fecha",
       accessor: "pedido_fecha",
       render: (p) => (
-        <span className="text-xs text-[#5f5e5d]">{formatDate(p.pedido_fecha)}</span>
+        <span className="text-xs text-[#5f5e5d]">
+          {formatDate(p.pedido_fecha)}
+        </span>
       ),
     },
     {
@@ -237,44 +246,66 @@ export function AprobacionesView() {
         </div>
       </div>
 
-      {/* Filtros de la tabla */}
-      <div className="bg-paper border border-hairline rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Selector de Estado */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setFilterEstado("ESPERANDO_APROBACION")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              filterEstado === "ESPERANDO_APROBACION"
-                ? "bg-ink text-white"
-                : "bg-gray-100 text-[#5f5e5d] hover:bg-gray-200"
-            }`}
-          >
-            Esperando Aprobación
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterEstado("")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              filterEstado === ""
-                ? "bg-ink text-white"
-                : "bg-gray-100 text-[#5f5e5d] hover:bg-gray-200"
-            }`}
-          >
-            Todos los Pedidos
-          </button>
+      {/* Inputs de Filtros: fecha, cliente, estado */}
+      <div className="bg-paper border border-hairline rounded-2xl p-4 flex flex-col md:flex-row items-center gap-3">
+        {/* Filtro Fecha */}
+        <div className="w-full md:w-44">
+          <input
+            type="date"
+            value={filterFecha}
+            onChange={(e) => setFilterFecha(e.target.value)}
+            className="w-full px-3 py-1.5 text-xs bg-white border border-hairline rounded-lg focus:outline-ink"
+          />
         </div>
 
-        {/* Buscador de pedidos */}
-        <div className="w-full md:w-72">
+        {/* Filtro Cliente */}
+        <div className="w-full md:w-60 relative">
           <input
             type="text"
-            placeholder="Buscar por ID, cliente o vendedor..."
+            placeholder="Filtrar por cliente..."
+            value={filterCliente}
+            onChange={(e) => setFilterCliente(e.target.value)}
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-hairline rounded-lg focus:outline-ink"
+          />
+          <LuSearch className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+        </div>
+
+        {/* Filtro Estado */}
+        <div className="w-full md:w-56">
+          <select
+            value={filterEstado}
+            onChange={(e) => setFilterEstado(e.target.value)}
+            className="w-full px-3 py-1.5 text-xs bg-white border border-hairline rounded-lg focus:outline-ink text-[#0c0a08]"
+          >
+            <option value="">Todos los Estados</option>
+            <option value="ESPERANDO_APROBACION">Esperando Aprobación</option>
+            <option value="APROBADO">Aprobado</option>
+            <option value="FACTURADO">Facturado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+        </div>
+
+        {/* Búsqueda rápida general */}
+        <div className="w-full md:w-56">
+          <input
+            type="text"
+            placeholder="Buscar ID o vendedor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-1.5 text-xs bg-white border border-hairline rounded-lg focus:outline-ink"
           />
         </div>
+
+        {/* Limpiar Filtros */}
+        {hasActiveFilters && (
+          <Button
+            variant="secondary"
+            onClick={handleClearFilters}
+            className="text-xs py-1.5 px-3 inline-flex items-center gap-1 shrink-0"
+          >
+            <LuX className="w-3.5 h-3.5" /> Limpiar
+          </Button>
+        )}
       </div>
 
       {/* Tabla de Aprobaciones */}
@@ -284,10 +315,10 @@ export function AprobacionesView() {
         isLoading={isLoading}
         isError={isError}
         keyExtractor={(p) => p.pedido_id}
-        emptyTitle="No hay pedidos pendientes de aprobación"
+        emptyTitle="No hay pedidos con los filtros seleccionados"
         emptyDescription={
-          filterEstado === "ESPERANDO_APROBACION"
-            ? "Todos los pedidos con descuento han sido procesados o aprobados."
+          hasActiveFilters
+            ? "No se encontraron pedidos con los criterios especificados."
             : "No se encontraron registros de pedidos."
         }
       />
@@ -317,6 +348,7 @@ export function AprobacionesView() {
         confirmVariant="primary"
         isLoading={isApproving}
       />
+
       {/* Modal de Facturación */}
       <FacturarModal
         isOpen={Boolean(pedidoToFacturar)}
