@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { useInventario } from "../../hooks/useInventario";
+import { useAuditoria } from "../../hooks/useAuditoria";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import { formatDate } from "../../utils/formatters";
 
 export function InventarioDashboard() {
   const {
@@ -17,7 +19,14 @@ export function InventarioDashboard() {
     refetchAlertas,
   } = useInventario();
 
-  const [activeTab, setActiveTab] = useState("general"); // 'general' | 'alertas'
+  const {
+    auditorias,
+    isLoading: isLoadingAuditoria,
+    isError: isErrorAuditoria,
+    refetch: refetchAuditoria,
+  } = useAuditoria();
+
+  const [activeTab, setActiveTab] = useState("general"); // 'general' | 'alertas' | 'movimientos'
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAlmacen, setSelectedAlmacen] = useState("TODOS");
 
@@ -259,6 +268,114 @@ export function InventarioDashboard() {
     },
   ];
 
+  // Filtrar movimientos de inventario desde la bitácora de auditoría
+  const inventarioMovimientos = useMemo(() => {
+    if (!Array.isArray(auditorias)) return [];
+    return auditorias.filter(
+      (a) =>
+        (a.auditoria_tabla || "").toUpperCase().includes("INVENTARIO") ||
+        (a.auditoria_tabla || "").toUpperCase().includes("PRODUCTO") ||
+        (a.auditoria_tabla || "").toUpperCase().includes("COMPRA") ||
+        (a.auditoria_tabla || "").toUpperCase().includes("VENTA")
+    );
+  }, [auditorias]);
+
+  const movimientosColumns = [
+    {
+      header: "Fecha / Hora",
+      accessor: "auditoria_fecha",
+      render: (m) => (
+        <span style={{ fontSize: 13, color: "#374151" }}>
+          {formatDate(m.auditoria_fecha)}
+        </span>
+      ),
+    },
+    {
+      header: "Módulo / Entidad",
+      accessor: "auditoria_tabla",
+      render: (m) => (
+        <span style={{ fontWeight: 600, fontSize: 12, color: "#0c0a08", fontFamily: "monospace" }}>
+          {m.auditoria_tabla}
+        </span>
+      ),
+    },
+    {
+      header: "Tipo de Movimiento",
+      accessor: "auditoria_accion",
+      render: (m) => {
+        const accion = (m.auditoria_accion || "").toUpperCase();
+        let bg = "#f3f4f6";
+        let color = "#374151";
+        let label = accion;
+
+        if (accion.includes("INSERT") || accion.includes("CREATE")) {
+          bg = "#ecfdf5";
+          color = "#047857";
+          label = "ENTRADA / REGISTRO";
+        } else if (accion.includes("UPDATE")) {
+          bg = "#eff6ff";
+          color = "#1d4ed8";
+          label = "AJUSTE / ACTUALIZACIÓN";
+        } else if (accion.includes("DELETE")) {
+          bg = "#fef2f2";
+          color = "#b91c1c";
+          label = "SALIDA / BAJA";
+        }
+
+        return (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: 6,
+              background: bg,
+              color,
+              letterSpacing: "0.03em",
+            }}
+          >
+            {label}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Campo Modificado",
+      accessor: "auditoria_campo",
+      render: (m) => (
+        <span style={{ fontSize: 12, color: "#4b5563", fontFamily: "monospace" }}>
+          {m.auditoria_campo || "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Valor Anterior",
+      accessor: "auditoria_valor_anterior",
+      render: (m) => (
+        <span style={{ fontSize: 12, color: "#6b7280" }}>
+          {m.auditoria_valor_anterior ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Valor Nuevo",
+      accessor: "auditoria_valor_nuevo",
+      render: (m) => (
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#0c0a08" }}>
+          {m.auditoria_valor_nuevo ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Usuario Responsable",
+      render: (m) => (
+        <span style={{ fontSize: 12, color: "#374151" }}>
+          {m.usuario?.usuario_nombre || m.usuario_nombre || "Sistema"}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Encabezado */}
@@ -448,6 +565,24 @@ export function InventarioDashboard() {
             </span>
           )}
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("movimientos")}
+          style={{
+            padding: "9px 18px",
+            fontSize: 13,
+            fontWeight: 600,
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            background: activeTab === "movimientos" ? "#0c0a08" : "transparent",
+            color: activeTab === "movimientos" ? "#ffffff" : "#6b7280",
+            transition: "all 0.15s",
+          }}
+        >
+          Movimientos e Historial (Kardex) ({inventarioMovimientos.length})
+        </button>
       </div>
 
       {/* Contenido Pestaña 1: Dashboard de Inventario General */}
@@ -544,6 +679,50 @@ export function InventarioDashboard() {
             emptyTitle="¡Todo en orden!"
             emptyDescription="Ningún SKU se encuentra por debajo de su stock mínimo en este momento."
             keyExtractor={(item) => `alerta_${item.inventario_id}_${item.variante_sku}`}
+          />
+        </div>
+      )}
+
+      {/* Contenido Pestaña 3: Movimientos e Historial (Kardex) */}
+      {activeTab === "movimientos" && (
+        <div className="space-y-4">
+          <div
+            style={{
+              padding: "16px 20px",
+              background: "#f8fafc",
+              border: "1px solid #cbd5e1",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div>
+              <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>
+                Historial de Movimientos y Auditoría de Stock (Kardex)
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: "#475569" }}>
+                Registro cronológico de entradas por compras, salidas por facturación de ventas y ajustes en existencias.
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => refetchAuditoria()}
+            >
+              Refrescar Kardex
+            </Button>
+          </div>
+
+          <DataTable
+            columns={movimientosColumns}
+            data={inventarioMovimientos}
+            isLoading={isLoadingAuditoria}
+            isError={isErrorAuditoria}
+            emptyTitle="Sin movimientos registrados"
+            emptyDescription="Aún no hay registros de movimientos o ajustes de inventario en la bitácora."
+            keyExtractor={(item) => item.auditoria_id}
           />
         </div>
       )}
