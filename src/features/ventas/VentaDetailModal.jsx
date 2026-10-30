@@ -158,8 +158,16 @@ export function VentaDetailModal({ isOpen, onClose, venta }) {
           </div>
         </div>
 
-        {/* Botón Cerrar */}
-        <div className="flex justify-end pt-2 border-t border-gray-100">
+        {/* Acciones */}
+        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => window.print()}
+            className="text-xs"
+          >
+            Imprimir Comprobante / PDF
+          </Button>
           <Button variant="secondary" onClick={onClose}>
             Cerrar
           </Button>
