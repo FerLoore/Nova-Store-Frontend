@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { HiOutlineXMark } from "react-icons/hi2";
+import { LuX } from "react-icons/lu";
 
 export function Modal({
   isOpen,
@@ -97,7 +97,7 @@ export function Modal({
             }}
             aria-label="Cerrar modal"
           >
-            <HiOutlineXMark style={{ fontSize: 18 }} />
+            <LuX className="w-4 h-4" />
           </button>
         </div>
 
@@ -107,4 +107,3 @@ export function Modal({
     </div>
   );
 }
-

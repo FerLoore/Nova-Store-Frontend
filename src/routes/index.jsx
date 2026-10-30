@@ -1,4 +1,4 @@
-﻿import { Routes, Route, Navigate } from "react-router";
+import { Routes, Route } from "react-router";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { DashboardLayout } from "../components/layout/DashboardLayout";
 import { LoginPage } from "../pages/LoginPage";
@@ -8,16 +8,20 @@ import { RolesPage } from "../pages/RolesPage";
 import { ClientesPage } from "../pages/ClientesPage";
 import { ProductosPage } from "../pages/ProductosPage";
 import { MarcasPage } from "../pages/MarcasPage";
+import { InventarioPage } from "../pages/InventarioPage";
 import { ProveedoresPage } from "../pages/ProveedoresPage";
 import { ComprasPage } from "../pages/ComprasPage";
-import { InventarioPage } from "../pages/InventarioPage";
+import { NuevoPedidoPage } from "../pages/NuevoPedidoPage";
+import { AprobacionesPage } from "../pages/AprobacionesPage";
 import { VentasPage } from "../pages/VentasPage";
+import { ReportesPage } from "../pages/ReportesPage";
+import { AuditoriaPage } from "../pages/AuditoriaPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Ruta pública */}
+      {/* Rutas públicas */}
       <Route path="/login" element={<LoginPage initialMode="login" />} />
       <Route path="/register" element={<LoginPage initialMode="register" />} />
 
@@ -103,7 +107,53 @@ export function AppRoutes() {
           }
         />
 
-        {/* Módulo Ventas y Salidas */}
+        {/* Módulo Marcas */}
+        <Route
+          path="marcas"
+          element={
+            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+              <MarcasPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Pedidos - Vista "Nuevo Pedido" */}
+        <Route
+          path="pedidos"
+          element={
+            <ProtectedRoute>
+              <NuevoPedidoPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="pedidos/nuevo"
+          element={
+            <ProtectedRoute>
+              <NuevoPedidoPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Aprobaciones - Vista "Aprobaciones" (Solo Gerente o Admin) */}
+        <Route
+          path="pedidos/aprobaciones"
+          element={
+            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+              <AprobacionesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="aprobaciones"
+          element={
+            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+              <AprobacionesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Ventas */}
         <Route
           path="ventas"
           element={
@@ -113,12 +163,22 @@ export function AppRoutes() {
           }
         />
 
-        {/* Módulo Marcas */}
+        {/* Módulo Reportes */}
         <Route
-          path="marcas"
+          path="reportes"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
-              <MarcasPage />
+            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+              <ReportesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo Auditoría (Solo Admin) */}
+        <Route
+          path="auditoria"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AuditoriaPage />
             </ProtectedRoute>
           }
         />

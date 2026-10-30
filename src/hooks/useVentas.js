@@ -1,15 +1,17 @@
-﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { ventaService } from "../api/venta.service";
 import { getErrorMessage } from "../utils/errors";
 
 export function useVentas(options = {}) {
   const queryClient = useQueryClient();
+  const { estado, cliente, fecha, enabled = true } = options;
 
-  const ventasQuery = useQuery({
-    queryKey: ["ventas"],
-    queryFn: ventaService.getVentas,
-    enabled: options.enabled ?? true,
+  const query = useQuery({
+    queryKey: ["ventas", { estado, cliente, fecha }],
+    queryFn: () => ventaService.getVentas({ estado, cliente, fecha }),
+    enabled,
+    refetchInterval: options.refetchInterval || false,
   });
 
   const createMutation = useMutation({
@@ -28,8 +30,8 @@ export function useVentas(options = {}) {
   });
 
   return {
-    ...ventasQuery,
-    ventas: ventasQuery.data ?? [],
+    ...query,
+    ventas: query.data ?? [],
     createVenta: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
   };

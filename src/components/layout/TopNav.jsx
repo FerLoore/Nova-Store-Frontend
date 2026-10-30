@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
+import { LuMenu, LuX, LuLogOut } from "react-icons/lu";
 
 export function Sidebar({ onClose }) {
   const { usuario, menu, logout } = useAuth();
@@ -94,6 +95,7 @@ export function Sidebar({ onClose }) {
             <li key={item.clave}>
               <NavLink
                 to={item.ruta}
+                end
                 onClick={onClose}
                 style={({ isActive }) => ({
                   display: "block",
@@ -325,7 +327,7 @@ export function TopNav() {
             }}
             aria-label="Abrir menú"
           >
-            {mobileMenuOpen ? "CERRAR" : "MENÚ"}
+            {mobileMenuOpen ? (<span className="inline-flex items-center gap-1"><LuX className="w-3.5 h-3.5" /> CERRAR</span>) : (<span className="inline-flex items-center gap-1"><LuMenu className="w-3.5 h-3.5" /> MENÚ</span>)}
           </button>
         </div>
 

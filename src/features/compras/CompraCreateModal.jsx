@@ -145,7 +145,7 @@ export function CompraCreateModal({ isOpen, onClose, onSave }) {
 
   const varianteOptions = allVariantes.map((v) => ({
     value: v.variante_id,
-    label: `[${v.variante_sku}] ${v.producto_nombre} - Talla: ${v.variante_talla}, Color: ${v.variante_color}`,
+    label: `${v.variante_sku} - ${v.producto_nombre} (${v.variante_talla} / ${v.variante_color})`,
   }));
 
   return (
@@ -157,35 +157,35 @@ export function CompraCreateModal({ isOpen, onClose, onSave }) {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {errorMsg && (
-          <div style={{ padding: "10px 14px", border: "1px solid #b42318", borderRadius: 10, fontSize: 13, color: "#b42318", lineHeight: 1.5, background: "#fef2f2" }}>
-            <strong>Error:</strong> {errorMsg}
+          <div style={{ padding: "10px 14px", border: "1px solid #b42318", borderRadius: 10, fontSize: 13, color: "#b42318", lineHeight: 1.5 }}>
+            {errorMsg}
           </div>
         )}
 
-        {/* 1. Selector de Proveedor */}
-        <div className="p-4 rounded-xl" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+        {/* Proveedor */}
+        <div>
           <Select
             label="Proveedor *"
-            options={proveedorOptions}
-            placeholder={loadingProvs ? "Cargando proveedores..." : "Selecciona el proveedor"}
+            options={[{ value: "", label: "Selecciona un proveedor..." }, ...proveedorOptions]}
             value={selectedProveedorId}
             onChange={(e) => setSelectedProveedorId(e.target.value)}
+            disabled={loadingProvs}
           />
         </div>
 
-        {/* 2. Selector de Variantes por SKU y campos de detalle */}
-        <div className="p-4 rounded-xl space-y-3" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "#4b5563" }}>
-            Agregar Productos a la Orden
+        {/* Selector de Items */}
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: "16px", background: "#f9fafb" }}>
+          <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 600, textTransform: "uppercase", color: "#4b5563" }}>
+            Agregar Producto a la Orden
           </p>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
             <div className="md:col-span-6">
               <Select
-                label="Variante (Buscar por SKU) *"
-                options={varianteOptions}
-                placeholder={loadingProds ? "Cargando catálogo..." : "Selecciona la variante por SKU"}
+                label="Producto / Variante (SKU) *"
+                options={[{ value: "", label: "Selecciona una variante..." }, ...varianteOptions]}
                 value={selectedVarianteId}
                 onChange={handleVarianteChange}
+                disabled={loadingProds}
               />
             </div>
             <div className="md:col-span-2">
@@ -193,35 +193,38 @@ export function CompraCreateModal({ isOpen, onClose, onSave }) {
                 label="Cantidad *"
                 type="number"
                 min="1"
-                placeholder="1"
-                restrictType="numbers"
+                step="1"
                 value={itemCantidad}
                 onChange={(e) => setItemCantidad(e.target.value)}
               />
             </div>
             <div className="md:col-span-2">
               <Input
-                label="P. Unitario *"
+                label="Precio Unitario *"
                 type="number"
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                restrictType="decimal"
                 value={itemPrecioUnitario}
                 onChange={(e) => setItemPrecioUnitario(e.target.value)}
               />
             </div>
             <div className="md:col-span-2">
-              <Button type="button" variant="compact" onClick={handleAddItem} className="w-full">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleAddItem}
+                style={{ width: "100%", height: 38 }}
+              >
                 + Agregar
               </Button>
             </div>
           </div>
         </div>
 
-        {/* 3. Columnas de detalle: SKU, Cantidad, Precio Unitario, Subtotal */}
-        <div className="space-y-2">
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "#4b5563" }}>
+        {/* Tabla de Items Agregados */}
+        <div>
+          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600, textTransform: "uppercase", color: "#4b5563" }}>
             Detalle de la Orden ({items.length} items)
           </p>
 

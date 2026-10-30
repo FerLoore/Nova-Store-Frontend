@@ -6,12 +6,12 @@ import { Modal } from "../../components/ui/Modal";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
+import { LuTrash2, LuPlus } from "react-icons/lu";
 import { CategoriaQuickModal } from "./CategoriaQuickModal";
 import { useCategorias } from "../../hooks/useCategorias";
 import { useMarcas } from "../../hooks/useMarcas";
 import { getErrorMessage } from "../../utils/errors";
 import { colorSchema, priceSchema, stockSchema, productNameSchema } from "../../utils/validators";
-import { HiOutlineTrash } from "react-icons/hi2";
 import { TALLAS_DISPONIBLES } from "./VariantesManager";
 
 const varianteItemSchema = z
@@ -215,9 +215,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                       type="button"
                       onClick={() => setCatModalOpen(true)}
                       style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", color: "#0c0a08", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
-                    >
-                      + Nueva categoría
-                    </button>
+                     className="inline-flex items-center gap-1 cursor-pointer"><LuPlus className="w-3 h-3" /> Nueva categoría</button>
                   </div>
                   <Select
                     options={categoriaOptions}
@@ -322,7 +320,7 @@ export function ProductoCreateModal({ isOpen, onClose, onSave }) {
                           gap: 4,
                         }}
                       >
-                        <HiOutlineTrash style={{ fontSize: 14 }} />
+                        <LuTrash2 className="w-3.5 h-3.5" />
                         <span>Quitar</span>
                       </button>
                     )}
