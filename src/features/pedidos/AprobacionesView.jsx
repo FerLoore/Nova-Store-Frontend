@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { usePedidos } from "../../hooks/usePedidos";
 import { DataTable } from "../../components/ui/DataTable";
@@ -75,8 +75,10 @@ export function AprobacionesView() {
       setErrorInventario(null);
       refetch();
     } catch (err) {
-      if (err?.response?.status === 400 && err?.response?.data?.error_tipo === "SIN_INVENTARIO") {
-        setErrorInventario(err.response.data);
+      if (err?.response?.status === 400) {
+        const errorData = err.response.data;
+        const msg = errorData?.message || errorData?.error || "Inventario insuficiente o no disponible para facturar este pedido.";
+        setErrorInventario(msg);
       }
     }
   };
