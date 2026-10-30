@@ -64,7 +64,10 @@ export function Sidebar({ onClose }) {
       </div>
 
       {/* Menú */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+      <nav
+        className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
         <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2 }}>
           <li>
             <NavLink
