@@ -29,6 +29,8 @@ export function useCompras(options = {}) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["compras"] });
       queryClient.invalidateQueries({ queryKey: ["productos"] });
+      queryClient.invalidateQueries({ queryKey: ["inventario"] });
+      queryClient.invalidateQueries({ queryKey: ["auditoria"] });
       toast.success(data?.message || "Compra recibida. Entradas de inventario registradas.");
     },
     onError: (err) => {
