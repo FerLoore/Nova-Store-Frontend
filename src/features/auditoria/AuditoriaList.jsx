@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAuditoria } from "../../hooks/useAuditoria";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
@@ -66,19 +66,24 @@ export function AuditoriaList() {
       header: "Acción",
       accessor: "auditoria_accion",
       render: (a) => {
-        let badgeColor = "bg-gray-100 text-gray-800 border-gray-300";
         if (a.auditoria_campo === "PED_ESTADO" || a.auditoria_accion === "APROBAR") {
           return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border bg-emerald-100 text-emerald-800 border-emerald-300 font-bold">APROBACIÓN</span>;
-        } else if (a.auditoria_campo === "PED_DESCUENTO" || a.auditoria_accion === "DESCUENTO") {
+        }
+        if (a.auditoria_campo === "PED_DESCUENTO" || a.auditoria_accion === "DESCUENTO") {
           return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border bg-amber-100 text-amber-900 border-amber-300 font-bold">DESCUENTO</span>;
         }
-        if (false) {
-          badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300 font-bold";
-        } else if (a.auditoria_accion === "DESCUENTO") {
-          badgeColor = "bg-amber-100 text-amber-900 border-amber-300 font-bold";
-        }
+
+        const badgeColor =
+          a.auditoria_accion === "INSERT" || a.auditoria_accion === "CREATE"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : a.auditoria_accion === "DELETE"
+            ? "bg-rose-50 text-rose-700 border-rose-200"
+            : a.auditoria_accion === "UPDATE"
+            ? "bg-blue-50 text-blue-700 border-blue-200"
+            : "bg-gray-100 text-gray-800 border-gray-300";
+
         return (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border ${badgeColor}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase border font-medium ${badgeColor}`}>
             {a.auditoria_accion}
           </span>
         );

@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { reportesService } from "../api/reportes.service";
 
 export function useReportes() {
@@ -12,13 +12,19 @@ export function useReportes() {
     queryFn: reportesService.getTopProductos,
   });
 
+  const extractArray = (res) => {
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    return [];
+  };
+
   return {
-    ventasPorDia: ventasQuery.data ?? [],
+    ventasPorDia: extractArray(ventasQuery.data),
     loadingVentas: ventasQuery.isLoading,
     errorVentas: ventasQuery.isError,
     refetchVentas: ventasQuery.refetch,
 
-    topProductos: topProductosQuery.data ?? [],
+    topProductos: extractArray(topProductosQuery.data),
     loadingTop: topProductosQuery.isLoading,
     errorTop: topProductosQuery.isError,
     refetchTop: topProductosQuery.refetch,
