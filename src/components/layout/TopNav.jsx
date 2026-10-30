@@ -115,29 +115,6 @@ export function Sidebar({ onClose }) {
               </NavLink>
             </li>
           ))}
-          {menu.some((m) => m.ruta === "/productos") && (
-            <li>
-              <NavLink
-                to="/marcas"
-                onClick={onClose}
-                style={({ isActive }) => ({
-                  display: "block",
-                  padding: "8px 12px",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  transition: "background 0.15s",
-                  background: isActive ? "#e4f222" : "transparent",
-                  color: isActive ? "#0c0a08" : "#d3d3d3",
-                })}
-              >
-                Marcas
-              </NavLink>
-            </li>
-          )}
         </ul>
       </nav>
 
@@ -287,25 +264,6 @@ export function TopNav() {
                 {item.etiqueta}
               </NavLink>
             ))}
-            {menu.some((m) => m.ruta === "/productos") && (
-              <NavLink
-                to="/marcas"
-                style={({ isActive }) => ({
-                  fontSize: 12,
-                  fontWeight: 500,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  textDecoration: "none",
-                  background: isActive ? "#e4f222" : "transparent",
-                  color: isActive ? "#0c0a08" : "#d3d3d3",
-                  transition: "background 0.15s, color 0.15s",
-                })}
-              >
-                Marcas
-              </NavLink>
-            )}
           </div>
         </div>
 
@@ -424,26 +382,6 @@ export function TopNav() {
               {item.etiqueta}
             </NavLink>
           ))}
-          {menu.some((m) => m.ruta === "/productos") && (
-            <NavLink
-              to="/marcas"
-              onClick={() => setMobileMenuOpen(false)}
-              style={({ isActive }) => ({
-                display: "block",
-                fontSize: 13,
-                fontWeight: 500,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-                padding: "8px 12px",
-                borderRadius: 6,
-                textDecoration: "none",
-                background: isActive ? "#e4f222" : "transparent",
-                color: isActive ? "#0c0a08" : "#d3d3d3",
-              })}
-            >
-              Marcas
-            </NavLink>
-          )}
           {usuario && (
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
               <div style={{ marginBottom: 8 }}>

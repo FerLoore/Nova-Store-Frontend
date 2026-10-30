@@ -11,6 +11,7 @@ const ADMIN_DEFAULT_MENU = [
   { clave: "clientes", etiqueta: "Clientes", ruta: "/clientes" },
   { clave: "proveedores", etiqueta: "Proveedores", ruta: "/proveedores" },
   { clave: "productos", etiqueta: "Productos", ruta: "/productos" },
+  { clave: "marcas", etiqueta: "Marcas", ruta: "/marcas" },
   { clave: "inventario", etiqueta: "Inventario y Stock", ruta: "/inventario" },
   { clave: "compras", etiqueta: "Compras", ruta: "/compras" },
   { clave: "pedidos", etiqueta: "Nuevo Pedido", ruta: "/pedidos" },
