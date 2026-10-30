@@ -121,6 +121,38 @@ export function CompraDetailModal({ isOpen, onClose, compra, onRecibir, isRecibi
           </table>
         </div>
 
+        {/* Recepción Física de Mercadería */}
+        {isPendiente && (
+          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/60 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-900 m-0">
+                  Protocolo de Recepción Física e Inspección de Lote
+                </p>
+                <p className="text-xs text-amber-800 m-0 mt-0.5">
+                  Verifica que los paquetes coincidan con las cantidades y especificaciones de la orden antes de dar ingreso al almacén.
+                </p>
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-200 text-amber-950">
+                Pendiente de Inspección
+              </span>
+            </div>
+
+            <div className="text-xs text-gray-700 bg-white p-3 rounded-lg border border-amber-200 divide-y divide-gray-100">
+              {compra.detalles?.map((det) => (
+                <div key={det.detalle_id} className="py-2 first:pt-0 last:pb-0 flex items-center justify-between">
+                  <span className="font-medium text-gray-900">
+                    {det.variante?.producto?.producto_nombre} — {det.variante?.variante_talla} / {det.variante?.variante_color} ({det.variante?.variante_sku})
+                  </span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    ✓ Esperado: {det.detalle_cantidad} uds.
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Acciones */}
         <div className="flex items-center justify-between pt-4" style={{ borderTop: "1px solid #e5e7eb" }}>
           <div>
@@ -129,13 +161,14 @@ export function CompraDetailModal({ isOpen, onClose, compra, onRecibir, isRecibi
                 variant="primary"
                 onClick={() => onRecibir(compra.compra_id)}
                 disabled={isRecibiendo}
+                style={{ background: "#15803d", borderColor: "#15803d" }}
               >
                 {isRecibiendo ? (
-                  "Recibiendo..."
+                  "Procesando ingreso..."
                 ) : (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <HiOutlineCheck style={{ fontSize: 16 }} />
-                    <span>Recibir Compra (Registrar Entrada)</span>
+                    <span>Confirmar Recepción y Cargar a Stock</span>
                   </span>
                 )}
               </Button>
