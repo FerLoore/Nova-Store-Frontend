@@ -1,8 +1,8 @@
-﻿import { useReportes } from "../../hooks/useReportes";
+import { useReportes } from "../../hooks/useReportes";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { LuRefreshCw, LuTrendingUp, LuAward, LuCalendar, LuDollarSign, LuPackage } from "react-icons/lu";
+import { LuRefreshCw, LuTrendingUp, LuAward, LuCalendar, LuDollarSign, LuPackage, LuDownload, LuPrinter } from "react-icons/lu";
 
 export function ReportesView() {
   const {
@@ -14,6 +14,29 @@ export function ReportesView() {
     errorTop,
     refetchAll,
   } = useReportes();
+
+  // Exportar Ventas a CSV
+  const handleExportCSV = () => {
+    if (!ventasPorDia || ventasPorDia.length === 0) return;
+    const headers = ["Fecha", "Transacciones", "Total_Facturado_GTQ"];
+    const rows = ventasPorDia.map((v) => [
+      `"${v.fecha || ""}"`,
+      v.cantidad_ventas || 0,
+      v.total_ventas || 0,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `reporte_ventas_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   // Calcular métricas resumen
   const granTotalVentas = ventasPorDia.reduce((acc, v) => acc + (v.total_ventas || 0), 0);
@@ -121,9 +144,28 @@ export function ReportesView() {
             Métricas consolidadas de facturación diaria y ranking de productos con mayor rotación.
           </p>
         </div>
-        <div>
-          <Button variant="secondary" onClick={() => refetchAll()} className="inline-flex items-center gap-1.5">
-            <LuRefreshCw className="w-3.5 h-3.5" /> Actualizar Datos
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="secondary"
+            onClick={handleExportCSV}
+            disabled={!ventasPorDia || ventasPorDia.length === 0}
+            className="inline-flex items-center gap-1.5 text-xs"
+          >
+            <LuDownload className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handlePrint}
+            className="inline-flex items-center gap-1.5 text-xs"
+          >
+            <LuPrinter className="w-3.5 h-3.5" /> Imprimir / PDF
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => refetchAll()}
+            className="inline-flex items-center gap-1.5 text-xs"
+          >
+            <LuRefreshCw className="w-3.5 h-3.5" /> Actualizar
           </Button>
         </div>
       </div>
