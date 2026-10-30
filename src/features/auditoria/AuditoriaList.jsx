@@ -11,7 +11,8 @@ export function AuditoriaList() {
   const [filterAccion, setFilterAccion] = useState("");
 
   const filteredData = useMemo(() => {
-    return auditorias.filter((item) => {
+    const list = Array.isArray(auditorias) ? auditorias : [];
+    return list.filter((item) => {
       const matchSearch =
         !searchTerm ||
         String(item.auditoria_id).includes(searchTerm) ||

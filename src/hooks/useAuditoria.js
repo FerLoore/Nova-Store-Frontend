@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { auditoriaService } from "../api/auditoria.service";
 
 export function useAuditoria(options = {}) {
@@ -9,8 +9,17 @@ export function useAuditoria(options = {}) {
     refetchInterval: options.refetchInterval || false,
   });
 
+  const rawData = query.data;
+  const auditoriasList = Array.isArray(rawData)
+    ? rawData
+    : Array.isArray(rawData?.data)
+    ? rawData.data
+    : Array.isArray(rawData?.auditorias)
+    ? rawData.auditorias
+    : [];
+
   return {
     ...query,
-    auditorias: query.data ?? [],
+    auditorias: auditoriasList,
   };
 }
