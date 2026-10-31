@@ -41,7 +41,7 @@ export function AppRoutes() {
         <Route
           path="usuarios"
           element={
-            <ProtectedRoute allowedPermisos={["USUARIOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="USUARIOS">
               <UsuariosPage />
             </ProtectedRoute>
           }
@@ -51,7 +51,7 @@ export function AppRoutes() {
         <Route
           path="roles"
           element={
-            <ProtectedRoute allowedPermisos={["ROLES_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="ROLES">
               <RolesPage />
             </ProtectedRoute>
           }
@@ -61,7 +61,7 @@ export function AppRoutes() {
         <Route
           path="clientes"
           element={
-            <ProtectedRoute allowedPermisos={["CLIENTES_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="CLIENTES">
               <ClientesPage />
             </ProtectedRoute>
           }
@@ -71,7 +71,7 @@ export function AppRoutes() {
         <Route
           path="productos"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="PRODUCTOS">
               <ProductosPage />
             </ProtectedRoute>
           }
@@ -81,17 +81,17 @@ export function AppRoutes() {
         <Route
           path="inventario"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="INVENTARIO">
               <InventarioPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Módulo Proveedores */}
+        {/* Módulo Proveedores (parte de COMPRAS) */}
         <Route
           path="proveedores"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="COMPRAS">
               <ProveedoresPage />
             </ProtectedRoute>
           }
@@ -101,27 +101,27 @@ export function AppRoutes() {
         <Route
           path="compras"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="COMPRAS">
               <ComprasPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Módulo Marcas */}
+        {/* Módulo Marcas (parte de PRODUCTOS) */}
         <Route
           path="marcas"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="PRODUCTOS">
               <MarcasPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Módulo Pedidos - Vista "Nuevo Pedido" */}
+        {/* Módulo Pedidos */}
         <Route
           path="pedidos"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredModulo="PEDIDOS">
               <NuevoPedidoPage />
             </ProtectedRoute>
           }
@@ -129,17 +129,17 @@ export function AppRoutes() {
         <Route
           path="pedidos/nuevo"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredModulo="PEDIDOS">
               <NuevoPedidoPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Módulo Aprobaciones - Vista "Aprobaciones" (Solo Gerente o Admin) */}
+        {/* Módulo Aprobaciones */}
         <Route
           path="pedidos/aprobaciones"
           element={
-            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+            <ProtectedRoute requiredModulo="APROBACIONES">
               <AprobacionesPage />
             </ProtectedRoute>
           }
@@ -147,7 +147,7 @@ export function AppRoutes() {
         <Route
           path="aprobaciones"
           element={
-            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+            <ProtectedRoute requiredModulo="APROBACIONES">
               <AprobacionesPage />
             </ProtectedRoute>
           }
@@ -157,7 +157,7 @@ export function AppRoutes() {
         <Route
           path="ventas"
           element={
-            <ProtectedRoute allowedPermisos={["PRODUCTOS_VER", "PRODUCTOS_GESTIONAR"]}>
+            <ProtectedRoute requiredModulo="VENTAS">
               <VentasPage />
             </ProtectedRoute>
           }
@@ -167,17 +167,17 @@ export function AppRoutes() {
         <Route
           path="reportes"
           element={
-            <ProtectedRoute allowedRoles={["GERENTE", "ADMIN"]}>
+            <ProtectedRoute requiredModulo="REPORTES">
               <ReportesPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Módulo Auditoría (Solo Admin) */}
+        {/* Módulo Auditoría */}
         <Route
           path="auditoria"
           element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <ProtectedRoute requiredModulo="AUDITORIA">
               <AuditoriaPage />
             </ProtectedRoute>
           }

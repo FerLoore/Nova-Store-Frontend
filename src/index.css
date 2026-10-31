@@ -59,3 +59,65 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─── Estilos de impresion / exportar PDF ────────────────────────── */
+@media print {
+  /* Forzar impresion de colores de fondo (barras del grafico) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Ocultar navegacion, sidebar, botones */
+  nav,
+  aside,
+  header,
+  [data-print-hide],
+  .print-hide {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+  }
+
+  /* El grafico se expande completo sin scroll */
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  /* Forzar visibilidad del valor sobre cada barra */
+  .group > div:first-child {
+    opacity: 1 !important;
+  }
+
+  /* Contenedor del grafico: altura fija para que los porcentajes funcionen en print */
+  [data-chart-container] {
+    height: 12rem !important;
+    min-height: 12rem !important;
+    overflow: visible !important;
+  }
+
+  /* Las barras: color solido, sin hover */
+  [data-chart-bar] {
+    background-color: #1a1919 !important;
+    transition: none !important;
+  }
+
+  /* No cortar secciones en el salto de pagina */
+  .space-y-8 > *,
+  .space-y-4 > *,
+  table,
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 18mm 14mm;
+    size: A4 portrait;
+  }
+}

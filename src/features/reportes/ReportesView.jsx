@@ -35,7 +35,8 @@ export function ReportesView() {
   };
 
   const handlePrint = () => {
-    window.print();
+    // Delay para asegurar render completo antes de imprimir
+    setTimeout(() => window.print(), 150);
   };
 
   // Calcular métricas resumen
@@ -144,7 +145,7 @@ export function ReportesView() {
             Métricas consolidadas de facturación diaria y ranking de productos con mayor rotación.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap print-hide">
           <Button
             variant="secondary"
             onClick={handleExportCSV}
@@ -219,15 +220,16 @@ export function ReportesView() {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5f5e5d] mb-4">
               Gráfico de Tendencia Diaria
             </h3>
-            <div className="flex items-end gap-3 h-48 pt-4 pb-2 px-2 overflow-x-auto border-b border-hairline">
+            <div data-chart-container="true" className="flex items-end gap-3 h-48 pt-4 pb-2 px-2 overflow-x-auto border-b border-hairline">
               {ventasPorDia.map((item) => {
                 const heightPercent = Math.max(8, Math.round(((item.total_ventas || 0) / maxVentaDia) * 100));
                 return (
                   <div key={item.fecha} className="flex flex-col items-center flex-1 min-w-[48px] h-full justify-end group">
-                    <div className="text-[10px] font-bold text-[#0c0a08] mb-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <div className="text-[10px] font-bold text-[#0c0a08] mb-1 opacity-0 group-hover:opacity-100 print:opacity-100 transition-opacity whitespace-nowrap">
                       {formatCurrency(item.total_ventas)}
                     </div>
                     <div
+                      data-chart-bar="true"
                       style={{ height: `${heightPercent}%` }}
                       className="w-full bg-[#1a1919] group-hover:bg-[#e4f222] transition-colors rounded-t-md relative cursor-pointer"
                     />

@@ -1,59 +1,162 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { Spinner } from "../../components/ui/Spinner";
-import { usePermisos } from "../../hooks/usePermisos";
+import { permisoService } from "../../api/permiso.service";
+import { getErrorMessage } from "../../utils/errors";
+import toast from "react-hot-toast";
+
+const MODULOS = [
+  { key: "USUARIOS",     label: "Usuarios",     desc: "Gestión de cuentas de usuario" },
+  { key: "ROLES",        label: "Roles",         desc: "Configuración de roles y permisos" },
+  { key: "CLIENTES",     label: "Clientes",      desc: "Directorio de clientes" },
+  { key: "PRODUCTOS",    label: "Productos",     desc: "Catálogo, variantes y marcas" },
+  { key: "INVENTARIO",   label: "Inventario",    desc: "Stock y alertas de inventario" },
+  { key: "COMPRAS",      label: "Compras",       desc: "Órdenes de compra y proveedores" },
+  { key: "PEDIDOS",      label: "Pedidos",       desc: "Creación de pedidos de venta" },
+  { key: "APROBACIONES", label: "Aprobaciones",  desc: "Aprobar o rechazar pedidos" },
+  { key: "VENTAS",       label: "Ventas",        desc: "Facturación y ventas directas" },
+  { key: "REPORTES",     label: "Reportes",      desc: "KPIs y reportes ejecutivos" },
+  { key: "AUDITORIA",    label: "Auditoría",     desc: "Log de cambios del sistema" },
+];
+
+const NIVELES = [
+  { value: "NINGUNO",   label: "Sin acceso" },
+  { value: "LECTURA",   label: "Lectura" },
+  { value: "ESCRITURA", label: "Escritura" },
+];
+
+const COLORES = {
+  NINGUNO:   { bg: "#f4f2f0", text: "#9a9590", dot: "#c8c3be" },
+  LECTURA:   { bg: "#e8f4fd", text: "#1a6fa8", dot: "#3498db" },
+  ESCRITURA: { bg: "#eafbea", text: "#1a6b1a", dot: "#27ae60" },
+};
+
+function NivelSelector({ value, onChange, disabled }) {
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      {NIVELES.map((n) => {
+        const selected = value === n.value;
+        const col = COLORES[n.value];
+        return (
+          <button
+            key={n.value}
+            type="button"
+            disabled={disabled}
+            onClick={() => !disabled && onChange(n.value)}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 20,
+              border: selected ? `1.5px solid ${col.dot}` : "1.5px solid #e0dbd5",
+              background: selected ? col.bg : "#fff",
+              color: selected ? col.text : "#9a9590",
+              fontSize: 11,
+              fontWeight: selected ? 600 : 400,
+              cursor: disabled ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              transition: "all 0.15s",
+              opacity: disabled ? 0.5 : 1,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: selected ? col.dot : "#c8c3be",
+                display: "inline-block",
+              }}
+            />
+            {n.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function RolPermisosModal({ isOpen, onClose, rol }) {
-  const {
-    permisos,
-    isLoadingPermisos,
-    rolPermisos,
-    isLoadingRolPermisos,
-    updateRolPermisos,
-    isUpdatingRolPermisos,
-  } = usePermisos(rol?.rol_id);
+  const queryClient = useQueryClient();
+  const rolId = rol?.rol_id;
+  const esAdministrador = rol?.rol_nombre === "ADMINISTRADOR" || rolId === 1;
 
-  const [selectedIds, setSelectedIds] = useState([]);
+  // Estado local del mapa módulo→nivel
+  const [mapa, setMapa] = useState(() => {
+    const m = {};
+    for (const mod of MODULOS) m[mod.key] = "NINGUNO";
+    return m;
+  });
 
-  // Sincronizar checkboxes cuando se abre el modal o cuando llegan los permisos del rol
+  // Cargar permisos por módulo del rol
+  const { data: modulosData, isLoading } = useQuery({
+    queryKey: ["permisos-modulo", rolId],
+    queryFn: () => permisoService.getPermisosModulo(rolId),
+    enabled: isOpen && Boolean(rolId),
+  });
+
+  // Sincronizar mapa cuando llegan los datos
   useEffect(() => {
     if (!isOpen) return;
-    setSelectedIds(
-      Array.isArray(rolPermisos) && rolPermisos.length > 0
-        ? rolPermisos.map((p) => p.permiso_id)
-        : []
-    );
-  }, [isOpen, rolPermisos]);
+    if (modulosData) {
+      setMapa((prev) => {
+        const next = { ...prev };
+        for (const mod of MODULOS) {
+          next[mod.key] = modulosData[mod.key] ?? "NINGUNO";
+        }
+        return next;
+      });
+    }
+  }, [isOpen, modulosData]);
 
-  const togglePermiso = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  // Mutación para guardar
+  const saveMutation = useMutation({
+    mutationFn: () => permisoService.setPermisosModulo(rolId, mapa),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["permisos-modulo", rolId] });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success("Permisos del rol actualizados");
+      onClose();
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err));
+    },
+  });
+
+  const handleNivelChange = (modulo, nivel) => {
+    setMapa((prev) => ({ ...prev, [modulo]: nivel }));
   };
-
-  const handleSave = async () => {
-    if (!rol) return;
-    await updateRolPermisos({
-      rolId: rol.rol_id,
-      permiso_ids: selectedIds,
-    });
-    onClose();
-  };
-
-  const isLoading = isLoadingPermisos || isLoadingRolPermisos;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={`Permisos — ${rol?.rol_nombre || ""}`}
-      maxWidth="max-w-xl"
+      maxWidth="max-w-2xl"
     >
-      <div className="space-y-6">
-        <p style={{ fontSize: 13, color: "#5f5e5d", lineHeight: 1.6 }}>
-          Selecciona las casillas correspondientes a las acciones permitidas para este rol.
-        </p>
+      <div className="space-y-5">
+        {esAdministrador && (
+          <div
+            style={{
+              background: "#fff8e1",
+              border: "1px solid #f0c040",
+              borderRadius: 8,
+              padding: "10px 14px",
+              fontSize: 12,
+              color: "#7a5800",
+            }}
+          >
+            ⚠️ El rol <strong>ADMINISTRADOR</strong> tiene acceso total a todos los módulos y no puede modificarse.
+          </div>
+        )}
+
+        {!esAdministrador && (
+          <p style={{ fontSize: 13, color: "#5f5e5d", lineHeight: 1.6 }}>
+            Define el nivel de acceso por módulo. <strong>Escritura</strong> implica también <strong>Lectura</strong>.
+          </p>
+        )}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8">
@@ -63,54 +166,83 @@ export function RolPermisosModal({ isOpen, onClose, rol }) {
             </span>
           </div>
         ) : (
-          <div className="border border-hairline divide-y divide-hairline" style={{ borderRadius: 10 }}>
-            {permisos.map((permiso) => {
-              const isChecked = selectedIds.includes(permiso.permiso_id);
-              return (
-                <label
-                  key={permiso.permiso_id}
-                  className="flex items-start gap-3 p-3 cursor-pointer transition-colors"
-                  style={{ background: "transparent" }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#f4f2f0"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => togglePermiso(permiso.permiso_id)}
-                    className="mt-1 h-4 w-4 cursor-pointer"
-                    style={{ borderRadius: 4, accentColor: "#e4f222" }}
-                  />
-                  <div className="flex-1">
-                    <span style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", color: "#0c0a08", display: "block" }}>
-                      {permiso.permiso_codigo}
-                    </span>
-                    <span style={{ fontSize: 12, color: "#5f5e5d", display: "block", marginTop: 2 }}>
-                      {permiso.permiso_descripcion}
-                    </span>
-                  </div>
-                </label>
-              );
-            })}
+          <div
+            style={{
+              border: "1px solid #e5e0da",
+              borderRadius: 10,
+              overflow: "hidden",
+            }}
+          >
+            {/* Cabecera */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                gap: 12,
+                padding: "8px 16px",
+                background: "#f4f2f0",
+                borderBottom: "1px solid #e5e0da",
+              }}
+            >
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#5f5e5d", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Módulo
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#5f5e5d", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Nivel de acceso
+              </span>
+            </div>
+
+            {/* Filas */}
+            {MODULOS.map((mod, idx) => (
+              <div
+                key={mod.key}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  gap: 12,
+                  padding: "10px 16px",
+                  alignItems: "center",
+                  borderBottom: idx < MODULOS.length - 1 ? "1px solid #f0ebe5" : "none",
+                  background: idx % 2 === 0 ? "#fff" : "#faf9f7",
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#0c0a08", display: "block" }}>
+                    {mod.label}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#9a9590", display: "block", marginTop: 1 }}>
+                    {mod.desc}
+                  </span>
+                </div>
+                <NivelSelector
+                  value={esAdministrador ? "ESCRITURA" : (mapa[mod.key] ?? "NINGUNO")}
+                  onChange={(nivel) => handleNivelChange(mod.key, nivel)}
+                  disabled={esAdministrador || saveMutation.isPending}
+                />
+              </div>
+            ))}
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: "1px solid #e5e7eb" }}>
+        <div
+          className="flex items-center justify-end gap-3 pt-4"
+          style={{ borderTop: "1px solid #e5e7eb" }}
+        >
           <Button
             type="button"
             variant="secondary"
             onClick={onClose}
-            disabled={isUpdatingRolPermisos}
+            disabled={saveMutation.isPending}
           >
             Cancelar
           </Button>
           <Button
             type="button"
             variant="primary"
-            onClick={handleSave}
-            disabled={isUpdatingRolPermisos || isLoading}
+            onClick={() => saveMutation.mutate()}
+            disabled={esAdministrador || saveMutation.isPending || isLoading}
           >
-            {isUpdatingRolPermisos ? "Guardando..." : "Guardar Permisos"}
+            {saveMutation.isPending ? "Guardando..." : "Guardar permisos"}
           </Button>
         </div>
       </div>
