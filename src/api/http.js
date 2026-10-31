@@ -10,6 +10,7 @@ export const http = axios.create({
 });
 
 let onUnauthorizedCallback = null;
+let onForbiddenCallback = null;
 
 /**
  * Registra el callback de cierre de sesión para cuando ocurra un 401.
@@ -17,6 +18,14 @@ let onUnauthorizedCallback = null;
  */
 export function registerUnauthorizedHandler(cb) {
   onUnauthorizedCallback = cb;
+}
+
+/**
+ * Registra el callback para cuando ocurra un 403 (refrescar permisos desde /me).
+ * @param {Function} cb
+ */
+export function registerForbiddenHandler(cb) {
+  onForbiddenCallback = cb;
 }
 
 // Interceptor de Request: agrega token JWT si existe
@@ -47,12 +56,14 @@ http.interceptors.response.use(
       }
     }
 
-    // 403: aviso toast sin cerrar sesión
+    // 403: mensaje genérico amigable y refresco de permisos (nunca mensaje técnico)
     if (status === 403) {
-      const msg = error.response?.data?.message || "No tienes permiso para realizar esta acción";
-      toast.error(msg, {
+      toast.error("No tienes permiso para realizar esta acción", {
         id: "forbidden-error",
       });
+      if (typeof onForbiddenCallback === "function") {
+        onForbiddenCallback();
+      }
     }
 
     return Promise.reject(error);

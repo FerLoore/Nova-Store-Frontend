@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCompras } from "../../hooks/useCompras";
-import { useAuth } from "../../hooks/useAuth";
+import { usePermiso } from "../../hooks/usePermiso";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { CompraCreateModal } from "./CompraCreateModal";
@@ -9,8 +9,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { formatCurrency } from "../../utils/formatters";
 
 export function ComprasList() {
-  const { can } = useAuth();
-  const canManage = can("PRODUCTOS_GESTIONAR");
+  const { puedeEscribir: canManage } = usePermiso("COMPRAS");
 
   const {
     compras,
@@ -186,11 +185,13 @@ export function ComprasList() {
       />
 
       {/* Modal Crear Orden */}
-      <CompraCreateModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onSave={createCompra}
-      />
+      {canManage && (
+        <CompraCreateModal
+          isOpen={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onSave={createCompra}
+        />
+      )}
 
       {/* Modal Ver Detalle */}
       <CompraDetailModal

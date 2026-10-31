@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { usePermiso } from "../../hooks/usePermiso";
 import { usePedidos } from "../../hooks/usePedidos";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
@@ -10,16 +10,7 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 import { LuLock, LuCircleCheck, LuCheck, LuEye, LuRefreshCw, LuSearch, LuReceipt, LuFilter, LuCalendar, LuX } from "react-icons/lu";
 
 export function AprobacionesView() {
-  const { usuario } = useAuth();
-
-  // Verificar si el usuario es Gerente o Admin
-  const userRole = (usuario?.rol_nombre || "").trim().toUpperCase();
-  const isGerenteOrAdmin =
-    userRole.includes("ADMIN") ||
-    userRole.includes("GERENTE") ||
-    usuario?.rol_id === 1 ||
-    usuario?.rol_id === 5 ||
-    usuario?.rol_id === 6;
+  const { puedeVer, puedeEscribir } = usePermiso("APROBACIONES");
 
   // Filtros: fecha, cliente, estado
   const [filterEstado, setFilterEstado] = useState("");
@@ -31,7 +22,7 @@ export function AprobacionesView() {
     estado: filterEstado || undefined,
     cliente: filterCliente || undefined,
     fecha: filterFecha || undefined,
-    enabled: isGerenteOrAdmin,
+    enabled: puedeVer,
   });
 
   const [selectedPedidoDetalle, setSelectedPedidoDetalle] = useState(null);
@@ -92,7 +83,8 @@ export function AprobacionesView() {
 
   const hasActiveFilters = Boolean(filterEstado || filterCliente || filterFecha || searchTerm);
 
-  if (!isGerenteOrAdmin) {
+  // Sin acceso a APROBACIONES
+  if (!puedeVer) {
     return (
       <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
         <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto">
@@ -100,7 +92,7 @@ export function AprobacionesView() {
         </div>
         <h2 className="text-xl font-bold text-[#0c0a08]">Acceso Restringido</h2>
         <p className="text-sm text-[#5f5e5d]">
-          Esta vista es exclusiva para usuarios con rol de <strong>Gerente</strong> o <strong>Administrador</strong>.
+          No tienes permiso para ver las aprobaciones de pedidos.
         </p>
       </div>
     );
@@ -202,7 +194,7 @@ export function AprobacionesView() {
             className="text-[11px] py-1 px-2.5 inline-flex items-center gap-1"
             onClick={() => setSelectedPedidoDetalle(p)}
           ><LuEye className="w-3.5 h-3.5" /> Ver Detalle</Button>
-          {p.pedido_estado === "ESPERANDO_APROBACION" && (
+          {puedeEscribir && p.pedido_estado === "ESPERANDO_APROBACION" && (
             <Button
               variant="primary"
               className="text-[11px] py-1 px-3 inline-flex items-center gap-1"
@@ -210,7 +202,7 @@ export function AprobacionesView() {
               onClick={() => setPedidoToApprove(p)}
             ><LuCheck className="w-3.5 h-3.5" /> Aprobar</Button>
           )}
-          {p.pedido_estado === "APROBADO" && (
+          {puedeEscribir && p.pedido_estado === "APROBADO" && (
             <Button
               variant="primary"
               className="text-[11px] py-1 px-3 inline-flex items-center gap-1"
@@ -331,7 +323,7 @@ export function AprobacionesView() {
         isOpen={Boolean(selectedPedidoDetalle)}
         onClose={() => setSelectedPedidoDetalle(null)}
         pedido={selectedPedidoDetalle}
-        canApprove={isGerenteOrAdmin}
+        canApprove={puedeEscribir}
         isApproving={isApproving}
         onAprobar={async (id) => {
           await aprobarPedido(id);

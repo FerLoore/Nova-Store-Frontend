@@ -16,4 +16,13 @@ export const inventarioService = {
     const { data } = await http.get("/nova-inventario/alertas");
     return data;
   },
+
+  /**
+   * Endpoint de Kardex: Historial de movimientos de inventario.
+   * Requiere INVENTARIO/LECTURA en el backend.
+   */
+  async getKardex(params = {}) {
+    const { data } = await http.get("/nova-inventario/kardex", { params });
+    return data;
+  },
 };

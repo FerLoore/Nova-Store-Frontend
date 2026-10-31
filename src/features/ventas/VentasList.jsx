@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useVentas } from "../../hooks/useVentas";
+import { usePermiso } from "../../hooks/usePermiso";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { NuevaVentaModal } from "./NuevaVentaModal";
@@ -13,6 +14,8 @@ export function VentasList() {
   const [filterFecha, setFilterFecha] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedVenta, setSelectedVenta] = useState(null);
+
+  const { puedeEscribir } = usePermiso("VENTAS");
 
   const { ventas, isLoading, isError, refetch, createVenta } = useVentas({
     estado: filterEstado || undefined,
@@ -156,13 +159,15 @@ export function VentasList() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="primary"
-            onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center gap-1.5"
-          >
-            <LuPlus className="w-3.5 h-3.5" /> Nueva Venta
-          </Button>
+          {puedeEscribir && (
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateOpen(true)}
+              className="inline-flex items-center gap-1.5"
+            >
+              <LuPlus className="w-3.5 h-3.5" /> Nueva Venta
+            </Button>
+          )}
           <Button
             variant="secondary"
             onClick={() => refetch()}
@@ -275,12 +280,14 @@ export function VentasList() {
         }
       />
 
-      {/* Modal de Nueva Venta */}
-      <NuevaVentaModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onSave={createVenta}
-      />
+      {/* Modal de Nueva Venta — solo si tiene permiso */}
+      {puedeEscribir && (
+        <NuevaVentaModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onSave={createVenta}
+        />
+      )}
 
       {/* Modal de Detalle de Venta */}
       <VentaDetailModal

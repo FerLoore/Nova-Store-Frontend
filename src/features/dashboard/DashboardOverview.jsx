@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermiso } from "../../hooks/usePermiso";
 import { useUsuarios } from "../../hooks/useUsuarios";
 import { useClientes } from "../../hooks/useClientes";
 import { useProductos } from "../../hooks/useProductos";
@@ -7,12 +8,12 @@ import { useMarcas } from "../../hooks/useMarcas";
 import { useRoles } from "../../hooks/useRoles";
 
 export function DashboardOverview() {
-  const { usuario, can } = useAuth();
+  const { usuario } = useAuth();
 
-  const hasUsuarios = can("USUARIOS_GESTIONAR");
-  const hasRoles = can("ROLES_GESTIONAR");
-  const hasClientes = can("CLIENTES_GESTIONAR");
-  const hasProductos = can("PRODUCTOS_VER", "PRODUCTOS_GESTIONAR");
+  const { puedeVer: hasUsuarios } = usePermiso("USUARIOS");
+  const { puedeVer: hasRoles } = usePermiso("ROLES");
+  const { puedeVer: hasClientes } = usePermiso("CLIENTES");
+  const { puedeVer: hasProductos } = usePermiso("PRODUCTOS");
 
   const { usuarios, isLoading: loadingUsuarios } = useUsuarios({ enabled: hasUsuarios });
   const { roles, isLoading: loadingRoles } = useRoles({ enabled: hasRoles });
@@ -170,4 +171,3 @@ export function DashboardOverview() {
     </div>
   );
 }
-

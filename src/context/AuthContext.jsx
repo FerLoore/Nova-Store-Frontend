@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { authService } from "../api/auth.service";
 import { tokenStorage } from "../api/tokenStorage";
-import { registerUnauthorizedHandler } from "../api/http";
+import { registerUnauthorizedHandler, registerForbiddenHandler } from "../api/http";
 
 export const AuthContext = createContext(null);
 
@@ -57,12 +57,38 @@ export function AuthProvider({ children }) {
     setPermisosModulo({});
   }, []);
 
+  const refreshPermisos = useCallback(async () => {
+    try {
+      const token = tokenStorage.getToken();
+      if (!token) return;
+      const data = await authService.me();
+      if (data?.usuario) {
+        const pm = normalizePermisosModulo(data.usuario.permisosModulo);
+        setUsuario(data.usuario);
+        setPermisosModulo(pm);
+        const serverMenu = data.menu && data.menu.length > 0
+          ? data.menu
+          : buildMenuFromModulos(pm);
+        setMenu(serverMenu);
+      }
+    } catch (err) {
+      console.warn("Error al refrescar permisos:", err);
+    }
+  }, []);
+
   // Registrar callback para que http.js cierre sesión ante 401
   useEffect(() => {
     registerUnauthorizedHandler(() => {
       logout();
     });
   }, [logout]);
+
+  // Registrar callback para que http.js refresque permisos ante 403
+  useEffect(() => {
+    registerForbiddenHandler(() => {
+      refreshPermisos();
+    });
+  }, [refreshPermisos]);
 
   // Restaurar sesión al iniciar si hay token
   useEffect(() => {
@@ -77,7 +103,6 @@ export function AuthProvider({ children }) {
         const pm = normalizePermisosModulo(data.usuario?.permisosModulo);
         setUsuario(data.usuario);
         setPermisosModulo(pm);
-        // Preferir menú del servidor; si viene vacío, construirlo desde módulos
         const serverMenu = data.menu && data.menu.length > 0
           ? data.menu
           : buildMenuFromModulos(pm);
@@ -140,7 +165,6 @@ export function AuthProvider({ children }) {
 
   /**
    * @deprecated Usar puedeAcceder(modulo, nivel) en su lugar.
-   * Conservado para compatibilidad con código existente.
    */
   const can = useCallback(
     (...codigos) => {
@@ -171,8 +195,9 @@ export function AuthProvider({ children }) {
       register,
       logout,
       can,
+      refreshPermisos,
     }),
-    [usuario, menu, loading, permisosModulo, isGerenteOrAdmin, puedeAcceder, login, register, logout, can]
+    [usuario, menu, loading, permisosModulo, isGerenteOrAdmin, puedeAcceder, login, register, logout, can, refreshPermisos]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -220,18 +220,19 @@ export function ReportesView() {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#5f5e5d] mb-4">
               Gráfico de Tendencia Diaria
             </h3>
-            <div data-chart-container="true" className="flex items-end gap-3 h-48 pt-4 pb-2 px-2 overflow-x-auto border-b border-hairline">
+            <div data-chart-container="true" className="flex gap-3 pt-4 pb-2 px-2 overflow-x-auto border-b border-hairline" style={{ alignItems: 'flex-end', minHeight: 200 }}>
               {ventasPorDia.map((item) => {
-                const heightPercent = Math.max(8, Math.round(((item.total_ventas || 0) / maxVentaDia) * 100));
+                const BAR_MAX_PX = 160;
+                const heightPx = Math.max(12, Math.round(((item.total_ventas || 0) / maxVentaDia) * BAR_MAX_PX));
                 return (
-                  <div key={item.fecha} className="flex flex-col items-center flex-1 min-w-[48px] h-full justify-end group">
+                  <div key={item.fecha} className="flex flex-col items-center flex-1 min-w-[48px] justify-end group" style={{ height: BAR_MAX_PX + 40 }}>
                     <div className="text-[10px] font-bold text-[#0c0a08] mb-1 opacity-0 group-hover:opacity-100 print:opacity-100 transition-opacity whitespace-nowrap">
                       {formatCurrency(item.total_ventas)}
                     </div>
                     <div
                       data-chart-bar="true"
-                      style={{ height: `${heightPercent}%` }}
-                      className="w-full bg-[#1a1919] group-hover:bg-[#e4f222] transition-colors rounded-t-md relative cursor-pointer"
+                      style={{ height: heightPx, minHeight: heightPx, flexShrink: 0 }}
+                      className="w-full bg-[#1a1919] group-hover:bg-[#e4f222] print:bg-[#1a1919] transition-colors rounded-t-md relative cursor-pointer"
                     />
                     <span className="text-[9px] font-mono text-[#5f5e5d] mt-2 whitespace-nowrap">
                       {item.fecha.slice(5)}

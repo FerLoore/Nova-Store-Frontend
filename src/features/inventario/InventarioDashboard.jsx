@@ -1,13 +1,16 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { useInventario } from "../../hooks/useInventario";
-import { useAuditoria } from "../../hooks/useAuditoria";
+import { usePermiso } from "../../hooks/usePermiso";
 import { DataTable } from "../../components/ui/DataTable";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { formatDate } from "../../utils/formatters";
+import { formatDate, formatCurrency } from "../../utils/formatters";
 
 export function InventarioDashboard() {
+  const { puedeEscribir: puedeEscribirInventario } = usePermiso("INVENTARIO");
+  const { puedeEscribir: puedeEscribirCompras } = usePermiso("COMPRAS");
+
   const {
     inventario,
     isLoadingGeneral,
@@ -17,14 +20,11 @@ export function InventarioDashboard() {
     isLoadingAlertas,
     isErrorAlertas,
     refetchAlertas,
+    kardex,
+    isLoadingKardex,
+    isErrorKardex,
+    refetchKardex,
   } = useInventario();
-
-  const {
-    auditorias,
-    isLoading: isLoadingAuditoria,
-    isError: isErrorAuditoria,
-    refetch: refetchAuditoria,
-  } = useAuditoria();
 
   const [activeTab, setActiveTab] = useState("general"); // 'general' | 'alertas' | 'movimientos'
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,7 +157,7 @@ export function InventarioDashboard() {
     },
   ];
 
-  // Columnas para la Tabla Destacada de Alertas (Muestra en rojo los SKU en alerta)
+  // Columnas para la Tabla Destacada de Alertas
   const alertasColumns = [
     {
       header: "SKU en Alerta",
@@ -255,71 +255,49 @@ export function InventarioDashboard() {
         </span>
       ),
     },
-    {
-      header: "Acción",
-      align: "right",
-      render: () => (
-        <Link to="/compras" style={{ textDecoration: "none" }}>
-          <Button variant="compact" style={{ background: "#b91c1c", color: "#fff", borderColor: "#b91c1c" }}>
-            Reabastecer
-          </Button>
-        </Link>
-      ),
-    },
+    ...(puedeEscribirCompras
+      ? [
+          {
+            header: "Acción",
+            align: "right",
+            render: () => (
+              <Link to="/compras" style={{ textDecoration: "none" }}>
+                <Button variant="compact" style={{ background: "#b91c1c", color: "#fff", borderColor: "#b91c1c" }}>
+                  Reabastecer
+                </Button>
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
-  // Filtrar movimientos de inventario desde la bitácora de auditoría
-  const inventarioMovimientos = useMemo(() => {
-    if (!Array.isArray(auditorias)) return [];
-    return auditorias.filter(
-      (a) =>
-        (a.auditoria_tabla || "").toUpperCase().includes("INVENTARIO") ||
-        (a.auditoria_tabla || "").toUpperCase().includes("PRODUCTO") ||
-        (a.auditoria_tabla || "").toUpperCase().includes("COMPRA") ||
-        (a.auditoria_tabla || "").toUpperCase().includes("VENTA")
-    );
-  }, [auditorias]);
-
+  // Columnas para Kardex (movimientos de inventario desde /nova-inventario/kardex)
   const movimientosColumns = [
     {
       header: "Fecha / Hora",
-      accessor: "auditoria_fecha",
+      accessor: "fecha",
       render: (m) => (
         <span style={{ fontSize: 13, color: "#374151" }}>
-          {formatDate(m.auditoria_fecha)}
+          {formatDate(m.fecha)}
         </span>
       ),
     },
     {
-      header: "Módulo / Entidad",
-      accessor: "auditoria_tabla",
-      render: (m) => (
-        <span style={{ fontWeight: 600, fontSize: 12, color: "#0c0a08", fontFamily: "monospace" }}>
-          {m.auditoria_tabla}
-        </span>
-      ),
-    },
-    {
-      header: "Tipo de Movimiento",
-      accessor: "auditoria_accion",
+      header: "Tipo",
+      accessor: "tipo",
       render: (m) => {
-        const accion = (m.auditoria_accion || "").toUpperCase();
+        const tipo = (m.tipo || "").toUpperCase();
         let bg = "#f3f4f6";
         let color = "#374151";
-        let label = accion;
+        let label = tipo;
 
-        if (accion.includes("INSERT") || accion.includes("CREATE")) {
-          bg = "#ecfdf5";
-          color = "#047857";
-          label = "ENTRADA / REGISTRO";
-        } else if (accion.includes("UPDATE")) {
-          bg = "#eff6ff";
-          color = "#1d4ed8";
-          label = "AJUSTE / ACTUALIZACIÓN";
-        } else if (accion.includes("DELETE")) {
-          bg = "#fef2f2";
-          color = "#b91c1c";
-          label = "SALIDA / BAJA";
+        if (tipo === "ENTRADA") {
+          bg = "#ecfdf5"; color = "#047857"; label = "ENTRADA";
+        } else if (tipo === "SALIDA") {
+          bg = "#fef2f2"; color = "#b91c1c"; label = "SALIDA";
+        } else if (tipo === "AJUSTE") {
+          bg = "#eff6ff"; color = "#1d4ed8"; label = "AJUSTE";
         }
 
         return (
@@ -340,37 +318,70 @@ export function InventarioDashboard() {
       },
     },
     {
-      header: "Campo Modificado",
-      accessor: "auditoria_campo",
+      header: "Documento",
+      accessor: "tipo_documento",
       render: (m) => (
         <span style={{ fontSize: 12, color: "#4b5563", fontFamily: "monospace" }}>
-          {m.auditoria_campo || "—"}
+          {m.tipo_documento || "—"}
         </span>
       ),
     },
     {
-      header: "Valor Anterior",
-      accessor: "auditoria_valor_anterior",
+      header: "Producto / Variante",
       render: (m) => (
-        <span style={{ fontSize: 12, color: "#6b7280" }}>
-          {m.auditoria_valor_anterior ?? "—"}
-        </span>
+        <div>
+          <span style={{ fontWeight: 600, fontSize: 12, color: "#0c0a08", display: "block" }}>
+            {m.variante?.producto?.producto_nombre || m.producto?.producto_nombre || "—"}
+          </span>
+          <span style={{ fontSize: 11, color: "#6b7280", fontFamily: "monospace" }}>
+            SKU: {m.variante?.variante_sku || "—"}
+          </span>
+        </div>
       ),
     },
     {
-      header: "Valor Nuevo",
-      accessor: "auditoria_valor_nuevo",
+      header: "Almacén",
       render: (m) => (
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#0c0a08" }}>
-          {m.auditoria_valor_nuevo ?? "—"}
+        <span style={{ fontSize: 12, color: "#4b5563" }}>
+          {m.almacen?.almacen_nombre || "—"}
         </span>
       ),
     },
     {
-      header: "Usuario Responsable",
+      header: "Cantidad",
+      accessor: "cantidad",
+      align: "right",
+      render: (m) => {
+        const cantidad = Number(m.cantidad) || 0;
+        const isEntrada = (m.tipo || "").toUpperCase() === "ENTRADA";
+        return (
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: 14,
+              color: isEntrada ? "#047857" : "#b91c1c",
+            }}
+          >
+            {isEntrada ? "+" : "-"}{Math.abs(cantidad)}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Saldo",
+      accessor: "saldo_acumulado",
+      align: "right",
+      render: (m) => (
+        <span style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>
+          {m.saldo_acumulado ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Usuario",
       render: (m) => (
         <span style={{ fontSize: 12, color: "#374151" }}>
-          {m.usuario?.usuario_nombre || m.usuario_nombre || "Sistema"}
+          {m.usuario?.usuario_nombre || "Sistema"}
         </span>
       ),
     },
@@ -399,11 +410,13 @@ export function InventarioDashboard() {
           >
             Actualizar datos
           </Button>
-          <Link to="/compras" style={{ textDecoration: "none" }}>
-            <Button variant="primary">
-              + Nueva Orden de Compra
-            </Button>
-          </Link>
+          {puedeEscribirCompras && (
+            <Link to="/compras" style={{ textDecoration: "none" }}>
+              <Button variant="primary">
+                + Nueva Orden de Compra
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -581,7 +594,7 @@ export function InventarioDashboard() {
             transition: "all 0.15s",
           }}
         >
-          Movimientos e Historial (Kardex) ({inventarioMovimientos.length})
+          Movimientos e Historial (Kardex) ({kardex.length})
         </button>
       </div>
 
@@ -663,11 +676,13 @@ export function InventarioDashboard() {
                 Se requiere generar órdenes de compra para reponer existencias.
               </p>
             </div>
-            <Link to="/compras" style={{ textDecoration: "none" }}>
-              <Button variant="primary" style={{ background: "#b91c1c", borderColor: "#b91c1c" }}>
-                Ir a Crear Orden de Compra
-              </Button>
-            </Link>
+            {puedeEscribirCompras && (
+              <Link to="/compras" style={{ textDecoration: "none" }}>
+                <Button variant="primary" style={{ background: "#b91c1c", borderColor: "#b91c1c" }}>
+                  Ir a Crear Orden de Compra
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Tabla Destacada de Alertas */}
@@ -701,7 +716,7 @@ export function InventarioDashboard() {
           >
             <div>
               <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>
-                Historial de Movimientos y Auditoría de Stock (Kardex)
+                Historial de Movimientos de Stock (Kardex)
               </p>
               <p style={{ margin: 0, fontSize: 13, color: "#475569" }}>
                 Registro cronológico de entradas por compras, salidas por facturación de ventas y ajustes en existencias.
@@ -709,7 +724,7 @@ export function InventarioDashboard() {
             </div>
             <Button
               variant="secondary"
-              onClick={() => refetchAuditoria()}
+              onClick={() => refetchKardex()}
             >
               Refrescar Kardex
             </Button>
@@ -717,12 +732,12 @@ export function InventarioDashboard() {
 
           <DataTable
             columns={movimientosColumns}
-            data={inventarioMovimientos}
-            isLoading={isLoadingAuditoria}
-            isError={isErrorAuditoria}
+            data={kardex}
+            isLoading={isLoadingKardex}
+            isError={isErrorKardex}
             emptyTitle="Sin movimientos registrados"
-            emptyDescription="Aún no hay registros de movimientos o ajustes de inventario en la bitácora."
-            keyExtractor={(item) => item.auditoria_id}
+            emptyDescription="Aún no hay registros de movimientos o ajustes de inventario."
+            keyExtractor={(item) => item.movimiento_id ?? Math.random()}
           />
         </div>
       )}
